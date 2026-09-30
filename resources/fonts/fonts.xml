@@ -1,0 +1,4 @@
+<fonts>
+    <font id="DigitsLarge" filename="digits_large.fnt" antialias="false"/>
+    <font id="DigitsMedium" filename="digits_medium.fnt" antialias="false"/>
+</fonts>

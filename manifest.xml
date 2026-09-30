@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
+    <iq:application id="c411d378e4ac4a059c28b690673c15f0" type="watch-app" name="@Strings.AppName" entry="ParcoursRunnerApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="3.1.0">
+        <iq:products>
+            <iq:product id="fr55"/>
+        </iq:products>
+        <iq:permissions>
+            <iq:uses-permission id="Fit"/>
+            <iq:uses-permission id="Positioning"/>
+            <iq:uses-permission id="Sensor"/>
+        </iq:permissions>
+        <iq:languages>
+            <iq:language>eng</iq:language>
+            <iq:language>fre</iq:language>
+        </iq:languages>
+        <iq:barrels/>
+    </iq:application>
+</iq:manifest>

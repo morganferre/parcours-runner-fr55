@@ -1,0 +1,74 @@
+<!-- English (default). French translation: resources-fre/strings/strings.xml -->
+<strings>
+    <string id="AppName">Parcours Runner</string>
+
+    <!-- Phone settings (Connect IQ app) -->
+    <string id="RouteTitle">Route (text from the converter, empty = built-in route)</string>
+    <string id="RoutePrompt">Paste the text starting with P1; here</string>
+
+    <string id="ZoomTitle">Map zoom</string>
+    <string id="Zoom100">100 m (very close)</string>
+    <string id="Zoom200">200 m</string>
+    <string id="Zoom300">300 m</string>
+    <string id="Zoom500">500 m</string>
+    <string id="Zoom1000">1 km (very wide)</string>
+
+    <string id="OrientationTitle">Map orientation</string>
+    <string id="OrientationTrack">Direction of travel up</string>
+    <string id="OrientationNorth">North up</string>
+
+    <string id="ThemeTitle">Colors</string>
+    <string id="ThemeDark">Black background</string>
+    <string id="ThemeLight">White background</string>
+
+    <string id="LineWidthTitle">Route line width</string>
+    <string id="LineWidth2">Thin</string>
+    <string id="LineWidth3">Normal</string>
+    <string id="LineWidth5">Thick</string>
+
+    <string id="ShowDoneTitle">Show the part already run in another color</string>
+    <string id="ShowStreetsTitle">Show streets (up to 300 m zoom)</string>
+
+    <string id="AutoLapTitle">Auto lap</string>
+    <string id="AutoLapOff">Off</string>
+    <string id="AutoLap500">Every 500 m</string>
+    <string id="AutoLap1000">Every 1 km</string>
+    <string id="AutoLap2000">Every 2 km</string>
+
+    <string id="AlertOnTitle">Vibrate when off course</string>
+    <string id="AlertToneTitle">Beep when off course</string>
+    <string id="AlertDistTitle">Alert distance (meters)</string>
+    <string id="AlertDistError">Between 10 and 500 m</string>
+
+    <!-- Watch screens -->
+    <string id="GpsOk">GPS OK: START</string>
+    <string id="GpsWeak">Weak GPS</string>
+    <string id="GpsSearching">Searching GPS</string>
+    <string id="PreparingStreets">Preparing streets...</string>
+    <string id="Paused">PAUSE</string>
+    <string id="Lap">LAP $1$</string>
+    <string id="Average">avg</string>
+    <string id="Time">time</string>
+    <string id="Finish">FINISH</string>
+    <string id="RouteAway">Route $1$ away</string>
+    <string id="OffCourse">OFF COURSE $1$ m</string>
+    <string id="NoRoute">No route\n\nPrepare one with\nprepare_route.py</string>
+    <string id="InvalidRoute">Invalid route</string>
+    <string id="Incomplete">Incomplete $1$/$2$ pts</string>
+    <string id="RunSaved">RUN SAVED</string>
+    <string id="BackToExit">BACK: exit</string>
+
+    <!-- Watch menus -->
+    <string id="MenuPause">Pause</string>
+    <string id="MenuResume">Resume</string>
+    <string id="MenuSave">Save</string>
+    <string id="MenuDiscard">Discard</string>
+    <string id="ConfirmDiscard">Discard this run?</string>
+    <string id="MenuSettings">Settings</string>
+    <string id="MenuZoom">Zoom</string>
+    <string id="MenuOrientation">Orientation</string>
+    <string id="MenuTrackUp">Track up</string>
+    <string id="MenuStreets">Streets</string>
+    <string id="MenuColors">Colors</string>
+    <string id="MenuAutoLap">Auto lap</string>
+</strings>

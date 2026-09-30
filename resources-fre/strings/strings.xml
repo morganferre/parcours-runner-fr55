@@ -1,0 +1,74 @@
+<!-- Français. Utilisé quand la montre est réglée en français. -->
+<strings>
+    <string id="AppName">Parcours Runner</string>
+
+    <!-- Réglages depuis le téléphone (appli Connect IQ) -->
+    <string id="RouteTitle">Parcours (texte du convertisseur, vide = parcours intégré)</string>
+    <string id="RoutePrompt">Collez ici le texte commençant par P1;</string>
+
+    <string id="ZoomTitle">Zoom de la carte</string>
+    <string id="Zoom100">100 m (très proche)</string>
+    <string id="Zoom200">200 m</string>
+    <string id="Zoom300">300 m</string>
+    <string id="Zoom500">500 m</string>
+    <string id="Zoom1000">1 km (très large)</string>
+
+    <string id="OrientationTitle">Orientation de la carte</string>
+    <string id="OrientationTrack">Sens de course en haut</string>
+    <string id="OrientationNorth">Nord en haut</string>
+
+    <string id="ThemeTitle">Couleurs</string>
+    <string id="ThemeDark">Fond noir</string>
+    <string id="ThemeLight">Fond blanc</string>
+
+    <string id="LineWidthTitle">Épaisseur du tracé</string>
+    <string id="LineWidth2">Fin</string>
+    <string id="LineWidth3">Normal</string>
+    <string id="LineWidth5">Épais</string>
+
+    <string id="ShowDoneTitle">Partie déjà courue d'une autre couleur</string>
+    <string id="ShowStreetsTitle">Afficher les rues (zoom 300 m max)</string>
+
+    <string id="AutoLapTitle">Tour automatique</string>
+    <string id="AutoLapOff">Désactivé</string>
+    <string id="AutoLap500">Tous les 500 m</string>
+    <string id="AutoLap1000">Tous les 1 km</string>
+    <string id="AutoLap2000">Tous les 2 km</string>
+
+    <string id="AlertOnTitle">Vibrer si hors parcours</string>
+    <string id="AlertToneTitle">Bip si hors parcours</string>
+    <string id="AlertDistTitle">Distance d'alerte (mètres)</string>
+    <string id="AlertDistError">Entre 10 et 500 m</string>
+
+    <!-- Écrans de la montre -->
+    <string id="GpsOk">GPS OK : START</string>
+    <string id="GpsWeak">GPS faible</string>
+    <string id="GpsSearching">Recherche GPS</string>
+    <string id="PreparingStreets">Préparation rues...</string>
+    <string id="Paused">PAUSE</string>
+    <string id="Lap">TOUR $1$</string>
+    <string id="Average">moy</string>
+    <string id="Time">temps</string>
+    <string id="Finish">ARRIVÉE</string>
+    <string id="RouteAway">Parcours à $1$</string>
+    <string id="OffCourse">HORS PARCOURS $1$ m</string>
+    <string id="NoRoute">Aucun parcours\n\nPréparez-le avec\nprepare_route.py</string>
+    <string id="InvalidRoute">Parcours invalide</string>
+    <string id="Incomplete">Incomplet $1$/$2$ pts</string>
+    <string id="RunSaved">COURSE ENREGISTRÉE</string>
+    <string id="BackToExit">BACK : quitter</string>
+
+    <!-- Menus de la montre -->
+    <string id="MenuPause">Pause</string>
+    <string id="MenuResume">Reprendre</string>
+    <string id="MenuSave">Enregistrer</string>
+    <string id="MenuDiscard">Supprimer</string>
+    <string id="ConfirmDiscard">Supprimer la course ?</string>
+    <string id="MenuSettings">Réglages</string>
+    <string id="MenuZoom">Zoom</string>
+    <string id="MenuOrientation">Orientation</string>
+    <string id="MenuTrackUp">Sens de course</string>
+    <string id="MenuStreets">Rues</string>
+    <string id="MenuColors">Couleurs</string>
+    <string id="MenuAutoLap">Tour auto</string>
+</strings>

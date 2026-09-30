@@ -1,0 +1,66 @@
+<settings>
+    <setting propertyKey="@Properties.route" title="@Strings.RouteTitle" prompt="@Strings.RoutePrompt">
+        <settingConfig type="alphaNumeric"/>
+    </setting>
+
+    <setting propertyKey="@Properties.zoom" title="@Strings.ZoomTitle">
+        <settingConfig type="list">
+            <listEntry value="100">@Strings.Zoom100</listEntry>
+            <listEntry value="200">@Strings.Zoom200</listEntry>
+            <listEntry value="300">@Strings.Zoom300</listEntry>
+            <listEntry value="500">@Strings.Zoom500</listEntry>
+            <listEntry value="1000">@Strings.Zoom1000</listEntry>
+        </settingConfig>
+    </setting>
+
+    <setting propertyKey="@Properties.orientation" title="@Strings.OrientationTitle">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.OrientationTrack</listEntry>
+            <listEntry value="1">@Strings.OrientationNorth</listEntry>
+        </settingConfig>
+    </setting>
+
+    <setting propertyKey="@Properties.theme" title="@Strings.ThemeTitle">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.ThemeDark</listEntry>
+            <listEntry value="1">@Strings.ThemeLight</listEntry>
+        </settingConfig>
+    </setting>
+
+    <setting propertyKey="@Properties.lineWidth" title="@Strings.LineWidthTitle">
+        <settingConfig type="list">
+            <listEntry value="2">@Strings.LineWidth2</listEntry>
+            <listEntry value="3">@Strings.LineWidth3</listEntry>
+            <listEntry value="5">@Strings.LineWidth5</listEntry>
+        </settingConfig>
+    </setting>
+
+    <setting propertyKey="@Properties.showDone" title="@Strings.ShowDoneTitle">
+        <settingConfig type="boolean"/>
+    </setting>
+
+    <setting propertyKey="@Properties.showStreets" title="@Strings.ShowStreetsTitle">
+        <settingConfig type="boolean"/>
+    </setting>
+
+    <setting propertyKey="@Properties.autoLap" title="@Strings.AutoLapTitle">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.AutoLapOff</listEntry>
+            <listEntry value="500">@Strings.AutoLap500</listEntry>
+            <listEntry value="1000">@Strings.AutoLap1000</listEntry>
+            <listEntry value="2000">@Strings.AutoLap2000</listEntry>
+        </settingConfig>
+    </setting>
+
+    <setting propertyKey="@Properties.alertOn" title="@Strings.AlertOnTitle">
+        <settingConfig type="boolean"/>
+    </setting>
+
+    <setting propertyKey="@Properties.alertTone" title="@Strings.AlertToneTitle">
+        <settingConfig type="boolean"/>
+    </setting>
+
+    <setting propertyKey="@Properties.alertDist" title="@Strings.AlertDistTitle">
+        <settingConfig type="numeric" min="10" max="500" errorMessage="@Strings.AlertDistError"/>
+    </setting>
+</settings>
