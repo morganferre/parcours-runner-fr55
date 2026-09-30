@@ -5,7 +5,8 @@ import Toybox.Sensor;
 import Toybox.Timer;
 import Toybox.WatchUi;
 
-const FRAME_MS = 250;       // 4 frames per second on the map screen while moving
+const FPS = 6;              // frames per second on the map screen while moving
+const FRAME_MS = 166;       // 1000 / FPS: keep both in sync
 
 // Full app: route map + run screens + Garmin activity recording.
 class ParcoursRunnerApp extends Application.AppBase {
@@ -47,7 +48,7 @@ class ParcoursRunnerApp extends Application.AppBase {
     // Every FRAME_MS: next map frame if it is moving; once per second: computations and screens.
     function onTick() as Void {
         mFrame++;
-        if (mFrame * FRAME_MS >= 1000) {
+        if (mFrame >= FPS) {
             mFrame = 0;
             run.tick();
             map.tick();

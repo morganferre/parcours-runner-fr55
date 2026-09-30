@@ -18,6 +18,9 @@ class RunSession {
     private var mAutoLap = 1000;        // m, 0 = off
 
     private var mSpeed = 0.0;           // smoothed speed (m/s)
+    // Activity values read once per second in tick(): the screens reuse them
+    // instead of asking the watch again for every number they draw.
+    private var mInfo = null;
 
     // Current lap
     private var mLap = 1;
@@ -95,6 +98,7 @@ class RunSession {
     function lap() as Void {
         if (mState != STATE_RUNNING || mSession == null) { return; }
         mSession.addLap();
+        mInfo = Activity.getActivityInfo();     // exact values at the button press
         var now = elapsedTime();
         var dist = distance();
         mLastNum = mLap;
@@ -119,6 +123,7 @@ class RunSession {
     // Once per second
     function tick() as Void {
         var info = Activity.getActivityInfo();
+        mInfo = info;
         if (info == null) { return; }
         var v = info.currentSpeed;
         if (v == null) { v = 0.0; }
@@ -138,14 +143,20 @@ class RunSession {
 
     // ---------------- Values ----------------
 
+    // Latest values, read at the last tick (or now if no tick has happened yet).
+    private function current() {
+        if (mInfo == null) { mInfo = Activity.getActivityInfo(); }
+        return mInfo;
+    }
+
     function elapsedTime() {
-        var info = Activity.getActivityInfo();
+        var info = current();
         if (info == null || info.timerTime == null) { return 0; }
         return info.timerTime;
     }
 
     function distance() {
-        var info = Activity.getActivityInfo();
+        var info = current();
         if (info == null || info.elapsedDistance == null) { return 0.0; }
         return info.elapsedDistance;
     }
@@ -153,19 +164,19 @@ class RunSession {
     function speed() { return mSpeed; }
 
     function averageSpeed() {
-        var info = Activity.getActivityInfo();
+        var info = current();
         if (info == null) { return null; }
         return info.averageSpeed;
     }
 
     function heartRate() {
-        var info = Activity.getActivityInfo();
+        var info = current();
         if (info == null) { return null; }
         return info.currentHeartRate;
     }
 
     function cadence() {
-        var info = Activity.getActivityInfo();
+        var info = current();
         if (info == null) { return null; }
         return info.currentCadence;
     }

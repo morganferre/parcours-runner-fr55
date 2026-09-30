@@ -569,7 +569,7 @@ class RouteMap {
         return mAnimOn && f < 1.0;
     }
 
-    // Called ~4 times per second: true if the map screen must be redrawn.
+    // Called FPS times per second: true if the map screen must be redrawn.
     function frame() {
         if (!mVisible || !animate()) { return false; }
         // Track-up map: the street bitmap does not rotate by itself,
@@ -580,7 +580,18 @@ class RouteMap {
         return true;
     }
 
-    function setVisible(v) as Void { mVisible = v; }
+    // Street drawing only runs while the map screen is shown: on the other screens it would
+    // keep the CPU busy for nothing and slow down the buttons.
+    function setVisible(v) as Void {
+        if (v == mVisible) { return; }
+        mVisible = v;
+        if (v) {
+            startRender();
+        } else if (mJob) {
+            mJob = false;
+            mTimer.stop();
+        }
+    }
 
     // Background tasks, once per second: street installation, then tile loading.
     function tick() as Void {
@@ -919,7 +930,7 @@ class RouteMap {
 
     // Starts (or restarts) drawing the streets for the current position.
     function startRender() as Void {
-        if (!streetsOn() || mTileKeys.size() == 0) { return; }
+        if (!mVisible || !streetsOn() || mTileKeys.size() == 0) { return; }
         if (mBmp[0] == null || mBmpBg != bg) {
             var pal = [bg, Graphics.COLOR_DK_BLUE, Graphics.COLOR_GREEN, 0x00FFFF];
             mBmp = [

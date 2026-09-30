@@ -26,6 +26,7 @@ class MainView extends WatchUi.View {
     private var mPreparing = "";
     private var mPaused = "";
     private var mAverage = "";
+    private var mLap = "";
 
     function initialize() {
         View.initialize();
@@ -40,10 +41,12 @@ class MainView extends WatchUi.View {
         mPreparing = Util.str(Rez.Strings.PreparingStreets);
         mPaused = Util.str(Rez.Strings.Paused);
         mAverage = Util.str(Rez.Strings.Average);
+        mLap = Util.str(Rez.Strings.Lap);
     }
 
     function nextPage(step) as Void {
         mPage = (mPage + step + PAGE_COUNT) % PAGE_COUNT;
+        getApp().map.setVisible(mPage == 0);     // right away: stops street drawing before the redraw
         WatchUi.requestUpdate();
     }
 
@@ -115,12 +118,13 @@ class MainView extends WatchUi.View {
         background(dc, map);
 
         dc.setColor(map.accent, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(w / 2, 17, Graphics.FONT_SMALL, Util.fmt(Rez.Strings.Lap, [run.lapNumber()]),
+        dc.drawText(w / 2, 17, Graphics.FONT_SMALL, Lang.format(mLap, [run.lapNumber()]),
             Graphics.TEXT_JUSTIFY_CENTER);
 
-        centeredText(dc, map.fg, w / 2, 46, mMedium, Util.time(run.lapTime()));
+        var lapMs = run.lapTime();
+        centeredText(dc, map.fg, w / 2, 46, mMedium, Util.time(lapMs));
         valueWithUnit(dc, map, w / 2, 81, mLarge, LARGE_TOP + LARGE_H,
-            Util.paceOf(run.lapTime(), run.lapDistance()), "/km");
+            Util.paceOf(lapMs, run.lapDistance()), "/km");
         valueWithUnit(dc, map, w / 2, 146, mMedium, MEDIUM_TOP + MEDIUM_H,
             Util.pace(run.averageSpeed()), mAverage);
     }
@@ -232,7 +236,7 @@ class MainView extends WatchUi.View {
         dc.setPenWidth(3);
         dc.drawRoundedRectangle(x, y, bw, bh, 10);
 
-        dc.drawText(w / 2, y + 4, Graphics.FONT_XTINY, Util.fmt(Rez.Strings.Lap, [t[0]]), Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(w / 2, y + 4, Graphics.FONT_XTINY, Lang.format(mLap, [t[0]]), Graphics.TEXT_JUSTIFY_CENTER);
         valueWithUnit(dc, map, w / 2, y + 20, mLarge, LARGE_TOP + LARGE_H, Util.paceOf(t[1], t[2]), "/km");
         dc.setColor(map.fg, Graphics.COLOR_TRANSPARENT);
         dc.drawText(w / 2, y + bh - 26, Graphics.FONT_XTINY,
