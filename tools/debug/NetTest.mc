@@ -10,7 +10,8 @@ import Toybox.WatchUi;
 // To use it: copy this file into source/, add <iq:uses-permission id="Communications"/> to
 // manifest.xml and make ParcoursRunnerApp.getInitialView() return
 // [new NetTestView(), new NetTestDelegate()]. Never leave it in source/ for a real build.
-const NET_TEST_URL = "https://gist.githubusercontent.com/morganferre/049e802f0872ff53509eaceae9e77a64/raw/";
+// Raw address of a gist holding test_2k.txt ... test_64k.txt (any text of that size).
+const NET_TEST_URL = "https://gist.githubusercontent.com/<user>/<gist id>/raw/";
 const NET_TEST_SIZES = [2, 8, 16, 32, 64];
 
 class NetTestView extends WatchUi.View {
