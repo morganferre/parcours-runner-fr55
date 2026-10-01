@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parcours Runner</title>
+<meta name="description" content="Create a route, add the OpenStreetMap streets around it and send it to the Garmin Forerunner 55 watch.">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --text: #1d2330; --muted: #5d6677; --line: #dde1e8;
+    --accent: #e0457b; --accent-text: #ffffff; --ok: #1f8a4c; --err: #c62828; --soft: #eef1f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151b; --card: #1b2029; --text: #e8ebf1; --muted: #9aa3b4; --line: #2c3340;
+      --accent: #ff5c93; --accent-text: #12151b; --ok: #4cc27f; --err: #ff6b6b; --soft: #242a35;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 18px 16px 6px; max-width: 760px; margin: 0 auto; }
+  header h1 { margin: 0; font-size: 1.5rem; }
+  header p { margin: 4px 0 0; color: var(--muted); }
+  main { max-width: 760px; margin: 0 auto; padding: 8px 16px 40px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px; margin: 12px 0; }
+  h2 { margin: 0 0 10px; font-size: 1.1rem; display: flex; gap: 8px; align-items: center; }
+  h2 .n { background: var(--accent); color: var(--accent-text); border-radius: 50%; width: 26px; height: 26px;
+    display: inline-flex; align-items: center; justify-content: center; font-size: .9rem; flex: none; }
+  #map { height: 55vh; min-height: 300px; border-radius: 10px; border: 1px solid var(--line); }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0; align-items: center; }
+  button, select, input[type=text], input[type=password], .file {
+    font: inherit; border-radius: 8px; border: 1px solid var(--line); background: var(--soft); color: var(--text);
+    padding: 9px 12px; min-height: 42px; }
+  button { cursor: pointer; }
+  button.main { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  button:disabled { opacity: .5; cursor: default; }
+  button.on { outline: 2px solid var(--accent); }
+  input[type=text], input[type=password] { flex: 1 1 200px; min-width: 0; }
+  .file { display: inline-flex; align-items: center; cursor: pointer; }
+  .file input { display: none; }
+  .info { color: var(--muted); font-size: .92rem; margin: 8px 0 0; }
+  .big { font-size: 1.15rem; font-weight: 600; }
+  .log { font: 13px/1.4 ui-monospace, Consolas, monospace; background: var(--soft); border-radius: 8px;
+    padding: 8px 10px; margin: 10px 0 0; white-space: pre-wrap; max-height: 180px; overflow: auto; }
+  .ok { color: var(--ok); } .err { color: var(--err); }
+  ul.routes { list-style: none; padding: 0; margin: 8px 0 0; }
+  ul.routes li { display: flex; gap: 8px; align-items: center; justify-content: space-between;
+    border-top: 1px solid var(--line); padding: 8px 0; }
+  ul.routes li span small { color: var(--muted); display: block; }
+  details summary { cursor: pointer; font-weight: 600; }
+  ol { padding-left: 20px; margin: 6px 0; }
+  a { color: var(--accent); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Parcours Runner</h1>
+  <p data-t="tagline"></p>
+</header>
+<main>
+
+  <section>
+    <h2><span class="n">1</span><span data-t="s1"></span></h2>
+    <div id="map"></div>
+    <div class="row">
+      <select id="profile" aria-label="profile">
+        <option value="hiking-mountain" data-t="foot"></option>
+        <option value="trekking" data-t="bike"></option>
+        <option value="straight" data-t="straight"></option>
+      </select>
+      <button id="undo" data-t="undo"></button>
+      <button id="loop" data-t="loop"></button>
+      <button id="clear" data-t="clear"></button>
+      <button id="locate" data-t="locate"></button>
+    </div>
+    <div class="row">
+      <label class="file"><span data-t="import"></span><input id="gpxFile" type="file" accept=".gpx,application/gpx+xml"></label>
+      <button id="export" data-t="export"></button>
+    </div>
+    <p class="info"><span class="big" id="dist">0.0 km</span> · <span data-t="drawHelp"></span></p>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span><span data-t="s2"></span></h2>
+    <div class="row">
+      <input id="name" type="text" maxlength="40" aria-label="name">
+      <select id="width" aria-label="width">
+        <option value="200">200 m</option>
+        <option value="300" selected>300 m</option>
+        <option value="400">400 m</option>
+      </select>
+    </div>
+    <p class="info" data-t="widthHelp"></p>
+    <div class="row"><button id="prepare" class="main" data-t="prepare"></button></div>
+    <div id="prepLog" class="log hidden"></div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span><span data-t="s3"></span></h2>
+    <div id="noAccount">
+      <p class="info" data-t="tokenHelp"></p>
+      <ol>
+        <li><a id="tokenLink" target="_blank" rel="noopener" data-t="tokenLink"></a></li>
+        <li data-t="tokenPaste"></li>
+      </ol>
+      <div class="row">
+        <input id="token" type="password" autocomplete="off" placeholder="ghp_...">
+        <button id="connect" data-t="connect"></button>
+      </div>
+    </div>
+    <div id="account" class="hidden">
+      <p class="info"><span data-t="gistIs"></span> <a id="gistLink" target="_blank" rel="noopener"></a>
+        · <a href="#" id="logout" data-t="logout"></a></p>
+      <div class="row"><button id="send" class="main" disabled data-t="send"></button></div>
+      <h2 style="margin-top:16px"><span data-t="online"></span></h2>
+      <ul class="routes" id="routes"></ul>
+    </div>
+    <div id="sendLog" class="log hidden"></div>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span><span data-t="s4"></span></h2>
+    <ol>
+      <li data-t="watch1"></li>
+      <li data-t="watch2"></li>
+      <li data-t="watch3"></li>
+    </ol>
+  </section>
+
+  <section>
+    <details>
+      <summary data-t="firstTime"></summary>
+      <p class="info" data-t="firstTimeText"></p>
+      <p class="info"><a href="https://github.com/morganferre/parcours-runner-fr55#readme" data-t="readme"></a></p>
+    </details>
+  </section>
+
+  <p class="info" data-t="credits"></p>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="prepare.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

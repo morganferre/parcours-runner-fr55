@@ -10,8 +10,12 @@ avec les rues OpenStreetMap autour, et enregistrez une vraie activité **Course 
 - alerte (vibration + bip) quand on sort du parcours ;
 - distance restante, anneau de progression ;
 - 3 écrans de course (carte, données, tour), tour automatique ;
-- tout fonctionne hors ligne : le parcours et les rues sont intégrés à l'appli ;
-- montre en français ou en anglais, selon la langue réglée sur la montre.
+- tout fonctionne hors ligne pendant la course : parcours et rues sont rangés dans la montre ;
+- montre en français ou en anglais, selon la langue réglée sur la montre ;
+- plusieurs parcours dans la montre, **envoyés sans câble** depuis le téléphone.
+
+**Site : [https://morganferre.github.io/parcours-runner-fr55/](https://morganferre.github.io/parcours-runner-fr55/)** : dessinez un parcours au doigt (il suit
+les rues) ou importez un GPX, le site ajoute les rues autour et l'envoie à la montre.
 
 ## Démarrage rapide
 
@@ -66,6 +70,13 @@ Les rues de tous les parcours doivent tenir dans la montre (environ 110 Ko) : le
 la place prise par chacun.
 
 ### Envoyer un parcours sans câble (via le téléphone)
+
+**Le plus simple : le [site](https://morganferre.github.io/parcours-runner-fr55/)**, depuis le téléphone ou le PC.
+1. Dessinez le parcours (touchez la carte, le tracé suit les rues, à pied ou à vélo) ou importez un GPX.
+2. **Préparer les rues**, puis **Envoyer vers la montre**. La première fois, le site demande une
+   clé GitHub limitée aux gists (un lien la crée en un clic) : elle reste dans votre navigateur.
+
+Ou depuis le PC, avec le script :
 
 ```
 python tools\prepare_route.py tools\mon_parcours.gpx --upload
@@ -197,7 +208,8 @@ source/ui/SummaryView.mc           résumé de fin
 resources/route_pack/              GÉNÉRÉ par tools/prepare_route.py (non versionné)
 resources*/strings/                textes de la montre, par langue
 tools/                             préparation et envoi des parcours, installation, simulateur, polices
-tools/debug/DebugFeed.mc           test au simulateur : fausse sortie le long du parcours
+tools/debug/                       tests : fausse sortie au simulateur, téléchargement, site = script
+docs/                              le site (GitHub Pages) : dessin, rues (prepare.js = prepare_route.py), envoi
 ```
 
 `tools/generate_fonts.py` régénère les polices de chiffres (nécessite Pillow et la police
