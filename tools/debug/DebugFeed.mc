@@ -2,7 +2,6 @@ import Toybox.Application.Storage;
 import Toybox.Lang;
 import Toybox.Math;
 import Toybox.Position;
-import Toybox.StringUtil;
 import Toybox.System;
 import Toybox.Timer;
 
@@ -19,27 +18,24 @@ class DebugFeed {
     var mCos;
     var mD = 0.0;
     var mLast = 0;
-    var mRouteIndex = -1;
+    var mRouteId = null;
 
     function initialize() {
         mTimer = new Timer.Timer();
         mTimer.start(method(:step), 1000, true);
     }
 
-    // The route chosen in the Routes menu (followed if it changes: back to its start).
-    private function load(i) as Void {
-        mRouteIndex = i;
+    // The route chosen in the Routes menu, built in or downloaded (followed if it changes).
+    private function load(id) as Void {
+        mRouteId = id;
         mD = 0.0;
         mLast = 0;
-        var a = RoutePack.routeBin(i);
-        mLat0 = a[0].toDouble() / 1000000.0d;
-        mLon0 = a[1].toDouble() / 1000000.0d;
-        mCos = Math.cos(mLat0 * Math.PI / 180.0d);
-        mN = a[2];
-        mPts = StringUtil.convertEncodedString(a[7], {
-            :fromRepresentation => StringUtil.REPRESENTATION_STRING_BASE64,
-            :toRepresentation => StringUtil.REPRESENTATION_BYTE_ARRAY
-        });
+        var r = new Route(id);
+        mLat0 = r.lat0;
+        mLon0 = r.lon0;
+        mCos = r.cosLat0;
+        mN = r.n;
+        mPts = r.data;
     }
 
     function g(o) {
@@ -49,9 +45,10 @@ class DebugFeed {
     }
 
     function step() as Void {
-        var r = RoutePack.IDS.indexOf(Storage.getValue("cur"));
-        if (r < 0) { r = 0; }
-        if (mPts == null || r != mRouteIndex) { load(r); }
+        var id = Storage.getValue("cur");
+        if (id == null) { return; }
+        if (mPts == null || !id.equals(mRouteId)) { load(id); }
+        if (mPts == null) { return; }
         mD += 6.0;
         var i = mLast;
         while (i < mN - 2 && g((i + 1) * 9 + 6) < mD) { i++; }

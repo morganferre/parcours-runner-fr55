@@ -1,17 +1,18 @@
 import Toybox.Application.Storage;
 import Toybox.Lang;
 
-const STORAGE_VERSION = 2;          // 1 (v1.1): a single route, tiles under "t" + tile number
+const STORAGE_VERSION = 3;          // 1 (v1.1): a single route; 2: tiles without steps
 
 // Copies the streets of the built-in routes into the watch storage, a few chunks per second,
 // the first time a new set of routes (new app file) is launched.
-// A route already installed (same id, same content) is not copied again.
+// A route already installed (same id, same content) or deleted by the user is not copied again.
 class RouteInstaller {
 
     private var mBusy = false;
     private var mRoute = 0;             // route being installed
     private var mChunk = 0;             // next chunk of that route
     private var mKeys = null;           // tile numbers of that route
+    private var mSize = 0;              // characters stored for that route
 
     function initialize() {
         var version = null;
@@ -24,6 +25,9 @@ class RouteInstaller {
         var installed = null;
         try { installed = Storage.getValue("pack"); } catch (e) { }
         if (installed != null && installed.equals(RoutePack.PACK_ID)) { return; }
+
+        // New app file: the built-in routes deleted from the watch come back.
+        try { Storage.deleteValue("hid"); } catch (e) { }
 
         // Streets of the routes that are no longer in the app.
         var old = null;
@@ -52,15 +56,17 @@ class RouteInstaller {
         if (mChunk == 0) {
             var done = null;
             try { done = Storage.getValue("k" + id); } catch (e) { }
-            if (done != null) {             // already installed
+            if (done != null || RouteStore.arrayOf("hid").indexOf(id) >= 0) {   // installed or deleted
                 nextRoute();
                 return;
             }
             mKeys = [];
+            mSize = 0;
         }
         if (mChunk >= RoutePack.CHUNKS[mRoute]) {
             try {
                 Storage.setValue("k" + id, mKeys);
+                Storage.setValue("z" + id, mSize);
             } catch (e) {
                 finish();
                 return;
@@ -73,9 +79,13 @@ class RouteInstaller {
             try {
                 Storage.setValue(RouteStore.tileKey(id, c[i]), c[i + 1]);
                 mKeys.add(c[i]);
+                mSize += c[i + 1].length();
             } catch (e) {
                 // Storage full: keep the streets already installed.
-                try { Storage.setValue("k" + id, mKeys); } catch (e2) { }
+                try {
+                    Storage.setValue("k" + id, mKeys);
+                    Storage.setValue("z" + id, mSize);
+                } catch (e2) { }
                 finish();
                 return;
             }
@@ -90,6 +100,7 @@ class RouteInstaller {
     }
 
     private function finish() as Void {
+        RouteStore.version++;
         try {
             Storage.setValue("builtins", RoutePack.IDS);
             Storage.setValue("pack", RoutePack.PACK_ID);

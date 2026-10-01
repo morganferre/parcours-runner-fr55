@@ -27,3 +27,6 @@ CLAUDE.md
 
 # Simulator test file, only copied into source/ while testing
 source/DebugFeed.mc
+
+# Secret gist of the downloadable routes (personal)
+tools/gist.txt

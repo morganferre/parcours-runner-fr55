@@ -60,6 +60,25 @@ python tools\prepare_route.py tools\tour_du_lac.gpx tools\centre_ville.gpx tools
 Les rues de tous les parcours doivent tenir dans la montre (environ 110 Ko) : le script affiche
 la place prise par chacun.
 
+### Envoyer un parcours sans câble (via le téléphone)
+
+```
+python tools\prepare_route.py tools\mon_parcours.gpx --upload
+```
+
+Le parcours et ses rues partent dans un **gist GitHub secret** de votre compte (créé au premier
+envoi, son adresse est gardée dans `tools\gist.txt`, non versionné). Le compte GitHub utilisé est
+celui connecté à git sur le PC. Au premier envoi, l'appli est recompilée pour connaître ce gist :
+installez-la une fois par câble.
+
+Ensuite, sur la montre : **Parcours › Télécharger...** (téléphone à proximité avec Garmin Connect).
+La montre reçoit environ 1 Ko/s : quelques secondes pour un petit parcours, environ 15 s pour 6 km
+en ville. Un parcours renvoyé avec le même nom remplace l'ancien dans la liste en ligne (la liste
+peut mettre quelques minutes à se rafraîchir).
+
+**Parcours › Gérer...** affiche la place utilisée et permet de supprimer un parcours de la montre
+(un parcours intégré à l'appli revient si vous réinstallez une nouvelle version de l'appli).
+
 Options utiles :
 
 | Option | Effet |
@@ -158,12 +177,14 @@ source/route/Route.mc              points du parcours (intégré ou collé depui
 source/route/RouteTracker.mc       position sur le parcours, progression, alerte hors parcours
 source/route/RouteStore.mc         liste des parcours de la montre, parcours choisi
 source/route/RouteInstaller.mc     copie des rues des parcours dans la montre (1er lancement)
+source/route/RouteDownloader.mc    téléchargement d'un parcours depuis le gist secret
 source/map/RouteMap.mc             écran carte : position, cap, animation, dessin
 source/map/StreetTiles.mc          rues : installation dans la montre, carrés autour de la position
 source/map/StreetLayer.mc          rues : dessin en arrière-plan dans deux images alternées
 source/ui/MainView.mc              les 3 écrans (carte, données, tour)
 source/ui/MainDelegate.mc          boutons
-source/ui/RouteMenu.mc             choix du parcours à l'ouverture (s'il y en a plusieurs)
+source/ui/RouteMenu.mc             menu Parcours (choix, Télécharger, Gérer / supprimer)
+source/ui/DownloadView.mc          liste en ligne et téléchargement avec barre de progression
 source/ui/SportMenu.mc             choix course à pied / vélo à l'ouverture
 source/ui/PauseMenu.mc             menu pause (reprendre, enregistrer, supprimer)
 source/ui/SettingsMenu.mc          menu réglages (UP maintenu)

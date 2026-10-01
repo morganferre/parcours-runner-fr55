@@ -80,6 +80,19 @@ module Util {
         return (meters / 1000.0).format("%.2f");
     }
 
+    // "a;b;c" -> ["a", "b", "c"]
+    function split(s, sep) {
+        var out = [];
+        var i = s.find(sep);
+        while (i != null) {
+            out.add(s.substring(0, i));
+            s = s.substring(i + sep.length(), s.length());
+            i = s.find(sep);
+        }
+        out.add(s);
+        return out;
+    }
+
     // Angle brought back between -pi and pi (radians).
     function angle(a) {
         while (a > Math.PI) { a -= 2 * Math.PI; }

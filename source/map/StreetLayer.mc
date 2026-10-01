@@ -52,6 +52,8 @@ class StreetLayer {
     private var mJobData = null;
     private var mJobTile = 0;
     private var mJobByte = 0;
+    private var mJobX = 0;              // last point decoded in the current tile (m)
+    private var mJobY = 0;
     private var mJobCat = -1;
     private var mJa = 0.0;              // view parameters frozen for the current drawing
     private var mJb = 0.0;
@@ -173,6 +175,8 @@ class StreetLayer {
         mJobData = mTiles.data;
         mJobTile = 0;
         mJobByte = 0;
+        mJobX = 0;
+        mJobY = 0;
         mJobCat = -1;
         mWork = (mShow == 0) ? 1 : 0;
         var bdc = mBmp[mWork].getDc();
@@ -208,16 +212,25 @@ class StreetLayer {
             if (bytes == null || cxm * cxm + cym * cym > vis2) {
                 mJobTile++;
                 mJobByte = 0;
+                mJobX = 0;
+                mJobY = 0;
                 continue;
             }
             var ox = mJcx + bx * a - by * b;
             var oy = mJcy - bx * b - by * a;
             var n = bytes.size();
             var i = mJobByte;
-            while (i + 1 < n && budget > 0) {
-                var cnt = bytes[i];
-                if (bytes[i + 1] != cat) {
-                    cat = bytes[i + 1];
+            // Points are steps from the previous one (see encode_tile in prepare_route.py):
+            // 1 byte from -64 to 63, otherwise 2 bytes. X, Y: last point of the tile (m).
+            var X = mJobX;
+            var Y = mJobY;
+            var v;
+            while (i < n && budget > 0) {
+                var head = bytes[i];
+                i++;
+                var cnt = head & 63;
+                if (head >> 6 != cat) {
+                    cat = head >> 6;
                     if (cat == 1) {
                         dc.setPenWidth(3);
                         dc.setColor(mStreetColor, Graphics.COLOR_TRANSPARENT);
@@ -232,18 +245,19 @@ class StreetLayer {
                         dc.setColor(mStreetColor, Graphics.COLOR_TRANSPARENT);
                     }
                 }
-                i += 2;
                 budget -= cnt;
                 // First point, then a line to each of the next ones (off screen: clipped by the watch).
-                var X = (bytes[i] << 8) | bytes[i + 1];
-                var Y = (bytes[i + 2] << 8) | bytes[i + 3];
-                i += 4;
+                v = bytes[i];
+                if (v < 128) { X += v - 64; i++; } else { X += ((v & 127) << 8 | bytes[i + 1]) - 16384; i += 2; }
+                v = bytes[i];
+                if (v < 128) { Y += v - 64; i++; } else { Y += ((v & 127) << 8 | bytes[i + 1]) - 16384; i += 2; }
                 var lx = ox + X * a - Y * b;
                 var ly = oy - X * b - Y * a;
                 for (var k = 1; k < cnt; k++) {
-                    X = (bytes[i] << 8) | bytes[i + 1];
-                    Y = (bytes[i + 2] << 8) | bytes[i + 3];
-                    i += 4;
+                    v = bytes[i];
+                    if (v < 128) { X += v - 64; i++; } else { X += ((v & 127) << 8 | bytes[i + 1]) - 16384; i += 2; }
+                    v = bytes[i];
+                    if (v < 128) { Y += v - 64; i++; } else { Y += ((v & 127) << 8 | bytes[i + 1]) - 16384; i += 2; }
                     var sx = ox + X * a - Y * b;
                     var sy = oy - X * b - Y * a;
                     dc.drawLine(lx, ly, sx, sy);
@@ -251,11 +265,15 @@ class StreetLayer {
                     ly = sy;
                 }
             }
-            if (i + 1 < n) {
+            if (i < n) {
                 mJobByte = i;               // tile not finished: resume here at the next step
+                mJobX = X;
+                mJobY = Y;
             } else {
                 mJobTile++;
                 mJobByte = 0;
+                mJobX = 0;
+                mJobY = 0;
             }
         }
         mJobCat = cat;

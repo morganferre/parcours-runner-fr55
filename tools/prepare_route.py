@@ -17,6 +17,8 @@ Usage (from the project folder):
   python tools/prepare_route.py lake.gpx city.gpx forest.gpx
   python tools/prepare_route.py my_route.gpx --width 300 --reverse
   python tools/prepare_route.py --no-map        (back to the version without a built-in route)
+  python tools/prepare_route.py city.gpx --upload   (sends the route to your secret GitHub gist:
+                                                     the watch downloads it through the phone)
 """
 
 import argparse
@@ -29,6 +31,7 @@ import re
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -360,10 +363,23 @@ def clip_segment(ax, ay, bx, by, x0, y0, x1, y1):
     return (ax + t0 * dx, ay + t0 * dy), (ax + t1 * dx, ay + t1 * dy)
 
 
+def varint(d):
+    """Signed step in m: 1 byte from -64 to 63, otherwise 2 bytes (same decoding as StreetLayer.mc)."""
+    if -64 <= d <= 63:
+        return bytes((d + 64,))
+    u = d + 16384
+    return bytes((0x80 | (u >> 8), u & 255))
+
+
+LINE_MAX = 63       # points per line: the count shares its byte with the category
+
+
 def encode_tile(c, lines):
-    """Bytes: for each line [point count, category], then x, y on 2 bytes (m from the corner)."""
+    """Bytes: for each line one byte (category << 6 | point count), then each point x, y (m from the
+    corner) as a step from the previous point, the first one from the end of the previous line."""
     ox, oy = c[0] * TILE, c[1] * TILE
     out = bytearray()
+    last = (0, 0)
 
     def q(p):
         return (min(TILE, max(0, int(round(p[0] - ox)))),
@@ -390,11 +406,12 @@ def encode_tile(c, lines):
             parts.append(cur)
         for m in parts:
             m = simplify(m, 2.0) if len(m) > 2 else m   # 1 pixel = 2 m at 200 m zoom
-            for start in range(0, len(m) - 1, 254):
-                part = m[start:start + 255]
-                out += bytes((len(part), cat))
+            for start in range(0, len(m) - 1, LINE_MAX - 1):
+                part = m[start:start + LINE_MAX]
+                out.append((cat << 6) | len(part))
                 for x, y in part:
-                    out += bytes((x >> 8, x & 255, y >> 8, y & 255))
+                    out += varint(x - last[0]) + varint(y - last[1])
+                    last = (x, y)
     return bytes(out)
 
 
@@ -516,6 +533,7 @@ module RoutePack {{
     const NAMES = [{", ".join(q(v) for v in names)}];
     const LENGTHS = [{", ".join(str(v) for v in lengths)}];   // m
     const CHUNKS = [{", ".join(str(v) for v in chunk_counts)}];    // tile chunks per route
+    const GIST = "{gist_id() or ""}";     // secret gist of downloadable routes (user/id), "" = none
 
     // Precomputed route i: see route_binary() in prepare_route.py
     function routeBin(i) {{
@@ -535,11 +553,12 @@ module RoutePack {{
 
 
 def write_empty_pack():
+    """Pack without route. The GIST of tools/gist.txt is kept so that the watch can download."""
     if PACK_RES.exists():
         for f in PACK_RES.glob("*"):
             f.unlink()
         PACK_RES.rmdir()
-    PACK_MC.write_text('''import Toybox.Lang;
+    PACK_MC.write_text(('''import Toybox.Lang;
 
 // Version without a map: no built-in route or streets.
 // This file is replaced by tools/prepare_route.py when a route is prepared.
@@ -552,6 +571,7 @@ module RoutePack {
     const NAMES = [];
     const LENGTHS = [];
     const CHUNKS = [];
+    const GIST = "";
 
     function routeBin(i) {
         return null;
@@ -561,7 +581,121 @@ module RoutePack {
         return null;
     }
 }
-''', encoding="utf-8")
+''').replace('const GIST = "";', f'const GIST = "{gist_id() or ""}";'), encoding="utf-8")
+
+
+# ---------------------------------------------------------------- secret gist (wireless)
+# The watch downloads the routes of a secret GitHub gist through the phone (Garmin Connect).
+# Gist files:
+#   index.txt          "PR1" then one line per route: id|name|length m|file count|characters
+#   <id>_<j>.txt       lines "key=value", at most FILE_MAX characters each file:
+#                        m=lat0;lon0;points;length;center x;center y;span;point parts;blocks base64
+#                        p<j>=part j of the points (base64)
+#                        t<tile number>=tile (base64)
+# The gist "user/id" is kept in tools/gist.txt (not versioned) and built into the app (RoutePack.GIST).
+
+GIST_FILE = ROOT / "tools" / "gist.txt"
+FILE_MAX = 8000         # characters per downloaded file: the watch receives about 1 KB/s
+POINTS_PART = 6000      # base64 characters per part of the points (multiple of 4)
+
+
+def gist_id():
+    if GIST_FILE.exists():
+        v = GIST_FILE.read_text(encoding="utf-8").strip()
+        return v or None
+    return None
+
+
+def github_token():
+    """Token of the GitHub account connected to git (Git Credential Manager)."""
+    try:
+        r = subprocess.run(["git", "credential", "fill"], input="protocol=https\nhost=github.com\n\n",
+                           capture_output=True, text=True, timeout=60)
+    except Exception as e:
+        stop(f"cannot ask git for the GitHub account ({e}).")
+    for line in r.stdout.splitlines():
+        if line.startswith("password="):
+            return line[len("password="):]
+    stop("no GitHub account connected to git: run a git push once, or install Git Credential Manager.")
+
+
+def github(method, path, token, body=None):
+    req = urllib.request.Request("https://api.github.com" + path, method=method,
+                                 data=json.dumps(body).encode() if body is not None else None,
+                                 headers={"Authorization": "token " + token,
+                                          "Accept": "application/vnd.github+json",
+                                          "User-Agent": "ParcoursRunner"})
+    try:
+        with urllib.request.urlopen(req, timeout=120) as r:
+            return json.load(r)
+    except urllib.error.HTTPError as e:
+        stop(f"GitHub refused the request ({e.code}): {e.read().decode(errors='replace')[:300]}")
+
+
+def route_files(binary, chunks, rid):
+    """Texts of the files <rid>_<j>.txt for one route."""
+    pts = binary[7]
+    parts = [pts[i:i + POINTS_PART] for i in range(0, len(pts), POINTS_PART)]
+    meta = ";".join([str(binary[0]), str(binary[1]), str(binary[2]), f"{binary[3]:.1f}",
+                     f"{binary[4]:.1f}", f"{binary[5]:.1f}", f"{binary[6]:.1f}", str(len(parts)), binary[8]])
+    entries = ["m=" + meta] + [f"p{j}={t}" for j, t in enumerate(parts)]
+    for chunk in chunks:
+        entries += [f"t{chunk[k]}={chunk[k + 1]}" for k in range(0, len(chunk), 2)]
+    files, cur = [], ""
+    for e in entries:
+        if cur and len(cur) + len(e) + 1 > FILE_MAX:
+            files.append(cur)
+            cur = ""
+        cur += e + "\n"
+    if cur:
+        files.append(cur)
+    return files
+
+
+def upload(routes):
+    token = github_token()
+    gid = gist_id()
+    files = {}
+    if gid:
+        g = github("GET", "/gists/" + gid.split("/")[-1], token)
+        index_file = g["files"].get("index.txt")
+        index_text = index_file["content"] if index_file else ""
+        existing = set(g["files"].keys())
+    else:
+        g = github("POST", "/gists", token, {
+            "description": "Parcours Runner - routes for the watch",
+            "public": False,
+            "files": {"README.md": {"content": "Routes for the Parcours Runner watch app. Keep this gist secret."}}})
+        gid = g["owner"]["login"] + "/" + g["id"]
+        GIST_FILE.write_text(gid + "\n", encoding="utf-8")
+        info(f"     new secret gist: https://gist.github.com/{gid}")
+        index_text = ""
+        existing = set()
+
+    # Index: one line per route, a route with the same name is replaced.
+    lines = [l for l in index_text.splitlines()[1:] if l.count("|") >= 4]
+    for r in routes:
+        binary = route_binary(r["route"])
+        chunks = tile_chunks(r["tiles"])
+        name = r["name"].replace("|", "-").replace("\n", " ").strip()
+        rid = hashlib.sha1((json.dumps(binary) + json.dumps(chunks)).encode()).hexdigest()[:8]
+        texts = route_files(binary, chunks, rid)
+        old = [l for l in lines if l.split("|")[1] == name or l.split("|")[0] == rid]
+        for l in old:
+            oid = l.split("|")[0]
+            for f in existing:
+                if f.startswith(oid + "_"):
+                    files[f] = None
+        lines = [l for l in lines if l not in old]
+        for j, t in enumerate(texts):
+            files[f"{rid}_{j}.txt"] = {"content": t}
+        size = sum(len(t) for t in texts)
+        lines.append(f"{rid}|{name}|{int(round(binary[3]))}|{len(texts)}|{size}")
+        info(f"     - {name}: {len(texts)} files, {size / 1024:.0f} KB, about {size / 1000:.0f} s to download")
+    files["index.txt"] = {"content": "PR1\n" + "".join(l + "\n" for l in lines)}
+    github("PATCH", "/gists/" + gid.split("/")[-1], token, {"files": files})
+    info(f"     {len(lines)} route(s) online in https://gist.github.com/{gid}")
+    return gid
 
 
 # ---------------------------------------------------------------- build
@@ -651,6 +785,8 @@ def main():
     ap.add_argument("--no-map", action="store_true", help="go back to the version without a built-in route or streets")
     ap.add_argument("--no-build", action="store_true", help="generate the files without building")
     ap.add_argument("--key", help="developer key path (default: the one set in VS Code)")
+    ap.add_argument("--upload", action="store_true",
+                    help="send the route(s) to your secret GitHub gist instead of building them into the app")
     a = ap.parse_args()
 
     if a.no_map:
@@ -671,6 +807,23 @@ def main():
         name = a.name or Path(gpx).stem.replace("_", " ")
         info(f"\n=== Route {k + 1}/{len(a.gpx)}: {name}")
         routes.append(prepare_one(gpx, name, a))
+
+    if a.upload:
+        info("\nSending to the secret gist")
+        had_gist = gist_id() is not None
+        upload(routes)
+        if had_gist:
+            info("\nDone: on the watch, Routes > Download (the list can take up to 5 minutes to refresh).")
+            return
+        # First upload: the app must know the gist. The built-in routes stay as they are.
+        info("\nFirst upload: the app is rebuilt so that it knows the gist.")
+        text = PACK_MC.read_text(encoding="utf-8")
+        PACK_MC.write_text(re.sub(r'const GIST = "[^"]*";', f'const GIST = "{gist_id()}";', text), encoding="utf-8")
+        if a.no_build:
+            return
+        build(a.key)
+        info(f"\nDone: {PRG}. Install it once (tools\\install_watch.ps1), then Routes > Download.")
+        return
 
     info("\n     Storage on the watch:")
     stats = write_pack(routes)

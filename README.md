@@ -60,6 +60,25 @@ python tools\prepare_route.py tools\lake_loop.gpx tools\city_center.gpx tools\fo
 The streets of all the routes must fit on the watch (about 110 KB): the script shows how much
 each one takes.
 
+### Send a route without a cable (through the phone)
+
+```
+python tools\prepare_route.py tools\my_route.gpx --upload
+```
+
+The route and its streets go to a **secret GitHub gist** of your account (created on the first
+upload, its address is kept in `tools\gist.txt`, not versioned). The GitHub account used is the one
+connected to git on the PC. On the first upload the app is rebuilt so that it knows the gist:
+install it once with the cable.
+
+Then on the watch: **Routes › Download...** (phone nearby with Garmin Connect). The watch receives
+about 1 KB/s: a few seconds for a small route, about 15 s for 6 km in a city. A route sent again
+with the same name replaces the old one in the online list (the list can take a few minutes to
+refresh).
+
+**Routes › Manage...** shows the storage used and deletes a route from the watch (a route built
+into the app comes back when a new version of the app is installed).
+
 Useful options:
 
 | Option | Effect |
@@ -159,12 +178,14 @@ source/route/Route.mc              route points (built in or pasted from the pho
 source/route/RouteTracker.mc       position on the route, progress, off-course alert
 source/route/RouteStore.mc         routes on the watch, route chosen
 source/route/RouteInstaller.mc     copies the streets of the routes to the watch (first launch)
+source/route/RouteDownloader.mc    downloads a route from the secret gist
 source/map/RouteMap.mc             map screen: position, heading, animation, drawing
 source/map/StreetTiles.mc          streets: install on the watch, tiles around the position
 source/map/StreetLayer.mc          streets: background drawing into two alternating bitmaps
 source/ui/MainView.mc              the 3 screens (map, data, lap)
 source/ui/MainDelegate.mc          buttons
-source/ui/RouteMenu.mc             route choice when the app opens (if there are several)
+source/ui/RouteMenu.mc             Routes menu (choice, Download, Manage / delete)
+source/ui/DownloadView.mc          online list and download with a progress bar
 source/ui/SportMenu.mc             running / cycling choice when the app opens
 source/ui/PauseMenu.mc             pause menu (resume, save, discard)
 source/ui/SettingsMenu.mc          settings menu (UP held)

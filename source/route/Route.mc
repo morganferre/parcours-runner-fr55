@@ -52,9 +52,51 @@ class Route {
         if (i >= 0) {
             fromPack(RoutePack.routeBin(i));
             hasStreets = true;
+        } else if (RouteStore.isDownloaded(routeId)) {
+            fromStorage(routeId);
+            hasStreets = true;
         } else {
             message = Util.str(Rez.Strings.InvalidRoute);
         }
+    }
+
+    // Route downloaded from the gist (RouteDownloader), same content as fromPack:
+    // "m" + id = lat0;lon0;points;length;center x;center y;span;point parts;blocks base64,
+    // "p" + id + "_" + j = part j of the points (base64, whole bytes).
+    private function fromStorage(routeId) as Void {
+        var meta = RouteStore.read("m" + routeId);
+        var f = (meta instanceof String) ? Util.split(meta, ";") : [];
+        if (f.size() < 9) {
+            message = Util.str(Rez.Strings.InvalidRoute);
+            return;
+        }
+        lat0 = f[0].toDouble() / 1000000.0d;
+        lon0 = f[1].toDouble() / 1000000.0d;
+        cosLat0 = Math.cos(lat0 * Math.PI / 180.0d);
+        total = f[3].toFloat();
+        centerX = f[4].toFloat();
+        centerY = f[5].toFloat();
+        span = f[6].toFloat();
+        var parts = f[7].toNumber();
+        var count = f[2].toNumber();
+        blk = decode64(f[8]);
+        f = null;
+        meta = null;
+        var bytes = null;
+        for (var j = 0; j < parts; j++) {
+            var text = RouteStore.read("p" + routeId + "_" + j);
+            if (!(text instanceof String)) { break; }
+            var b = decode64(text);
+            if (bytes == null) { bytes = b; } else { bytes.addAll(b); }
+        }
+        if (bytes == null || bytes.size() != count * REC) {
+            blk = null;
+            message = Util.str(Rez.Strings.InvalidRoute);
+            return;
+        }
+        data = bytes;
+        n = count;
+        nb = blk.size() / 12;
     }
 
     function isValid() { return n >= 2; }

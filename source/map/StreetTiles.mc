@@ -8,8 +8,8 @@ const STREETS_MAX_ZOOM = 300;       // beyond this, too many streets to draw in 
 
 // OSM streets around the position, read tile by tile (500 m) from the watch storage,
 // where RouteInstaller copied them (keys: see RouteStore).
-// Tile: for each line [point count, category], then x, y on 2 bytes (m from the corner,
-// tiles in the route coordinates).
+// Tile: for each line one byte (category << 6 | point count), then the points as steps
+// (see encode_tile in prepare_route.py), in m from the tile corner, in the route coordinates.
 // Categories: 0 street, 1 main road, 2 path, 3 waterway or water body.
 class StreetTiles {
 

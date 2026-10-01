@@ -11,6 +11,7 @@ module RoutePack {
     const NAMES = [];
     const LENGTHS = [];
     const CHUNKS = [];
+    const GIST = "";
 
     function routeBin(i) {
         return null;

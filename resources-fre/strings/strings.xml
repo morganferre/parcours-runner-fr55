@@ -62,6 +62,21 @@
     <!-- Menus de la montre -->
     <string id="MenuRoutes">Parcours</string>
     <string id="PhoneRoute">Du téléphone</string>
+    <string id="MenuDownload">Télécharger...</string>
+    <string id="MenuManage">Gérer...</string>
+    <string id="StorageUse">$1$ / $2$ Ko</string>
+    <string id="SizeKb">$1$ Ko</string>
+    <string id="NoRoutes">Aucun parcours</string>
+    <string id="ConfirmDelete">Supprimer $1$ ?</string>
+    <string id="Loading">Chargement...</string>
+    <string id="Installed">installé</string>
+    <string id="DlDone">Parcours installé</string>
+    <string id="DlOk">START : OK</string>
+    <string id="DlRetry">START : réessayer</string>
+    <string id="ErrPhone">Téléphone non connecté</string>
+    <string id="ErrNetwork">Erreur réseau $1$</string>
+    <string id="ErrStorageFull">Mémoire de la montre pleine</string>
+    <string id="ErrNoRouteOnline">Aucun parcours en ligne</string>
     <string id="MenuSport">Sport</string>
     <string id="SportRun">Course à pied</string>
     <string id="SportBike">Vélo</string>

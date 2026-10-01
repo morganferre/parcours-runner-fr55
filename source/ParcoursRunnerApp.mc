@@ -58,11 +58,11 @@ class ParcoursRunnerApp extends Application.AppBase {
         }
     }
 
-    // Routes menu (when there are several), then Sport menu, then the main view.
+    // Routes menu (when there are several, or routes to download), then Sport menu, then the main view.
     function getInitialView() {
         var routes = RouteStore.list();
-        if (routes.size() > 1) {
-            return [routeMenu(routes), new RouteMenuDelegate()];
+        if (routes.size() > 1 || RouteStore.canDownload()) {
+            return [new RouteMenu(), new RouteMenuDelegate()];
         }
         map.selectRoute(RouteStore.current(routes));
         return [sportMenu(), new SportMenuDelegate()];

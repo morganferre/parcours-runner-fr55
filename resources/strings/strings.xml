@@ -62,6 +62,21 @@
     <!-- Watch menus -->
     <string id="MenuRoutes">Routes</string>
     <string id="PhoneRoute">From the phone</string>
+    <string id="MenuDownload">Download...</string>
+    <string id="MenuManage">Manage...</string>
+    <string id="StorageUse">$1$ / $2$ KB</string>
+    <string id="SizeKb">$1$ KB</string>
+    <string id="NoRoutes">No route</string>
+    <string id="ConfirmDelete">Delete $1$?</string>
+    <string id="Loading">Loading...</string>
+    <string id="Installed">installed</string>
+    <string id="DlDone">Route installed</string>
+    <string id="DlOk">START: OK</string>
+    <string id="DlRetry">START: retry</string>
+    <string id="ErrPhone">Phone not connected</string>
+    <string id="ErrNetwork">Network error $1$</string>
+    <string id="ErrStorageFull">Watch storage full</string>
+    <string id="ErrNoRouteOnline">No route online</string>
     <string id="MenuSport">Sport</string>
     <string id="SportRun">Running</string>
     <string id="SportBike">Cycling</string>
