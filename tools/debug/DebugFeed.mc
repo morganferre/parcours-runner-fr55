@@ -1,3 +1,4 @@
+import Toybox.Application.Storage;
 import Toybox.Lang;
 import Toybox.Math;
 import Toybox.Position;
@@ -18,9 +19,19 @@ class DebugFeed {
     var mCos;
     var mD = 0.0;
     var mLast = 0;
+    var mRouteIndex = -1;
 
     function initialize() {
-        var a = RoutePack.routeBin();
+        mTimer = new Timer.Timer();
+        mTimer.start(method(:step), 1000, true);
+    }
+
+    // The route chosen in the Routes menu (followed if it changes: back to its start).
+    private function load(i) as Void {
+        mRouteIndex = i;
+        mD = 0.0;
+        mLast = 0;
+        var a = RoutePack.routeBin(i);
         mLat0 = a[0].toDouble() / 1000000.0d;
         mLon0 = a[1].toDouble() / 1000000.0d;
         mCos = Math.cos(mLat0 * Math.PI / 180.0d);
@@ -29,8 +40,6 @@ class DebugFeed {
             :fromRepresentation => StringUtil.REPRESENTATION_STRING_BASE64,
             :toRepresentation => StringUtil.REPRESENTATION_BYTE_ARRAY
         });
-        mTimer = new Timer.Timer();
-        mTimer.start(method(:step), 1000, true);
     }
 
     function g(o) {
@@ -40,6 +49,9 @@ class DebugFeed {
     }
 
     function step() as Void {
+        var r = RoutePack.IDS.indexOf(Storage.getValue("cur"));
+        if (r < 0) { r = 0; }
+        if (mPts == null || r != mRouteIndex) { load(r); }
         mD += 6.0;
         var i = mLast;
         while (i < mN - 2 && g((i + 1) * 9 + 6) < mD) { i++; }

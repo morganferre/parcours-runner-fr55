@@ -58,8 +58,13 @@ class ParcoursRunnerApp extends Application.AppBase {
         }
     }
 
-    // Sport menu first, then the main view (see SportMenuDelegate).
+    // Routes menu (when there are several), then Sport menu, then the main view.
     function getInitialView() {
+        var routes = RouteStore.list();
+        if (routes.size() > 1) {
+            return [routeMenu(routes), new RouteMenuDelegate()];
+        }
+        map.selectRoute(RouteStore.current(routes));
         return [sportMenu(), new SportMenuDelegate()];
     }
 

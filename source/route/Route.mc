@@ -11,9 +11,12 @@ const REC = 9;                      // bytes per point
 const BLOCK = 32;                   // points per block (bounding boxes to go fast)
 
 // The route: points in meters from its first point, with bounding boxes per block.
-// Loaded from the text pasted in the phone settings, otherwise from the route built in
-// by tools/prepare_route.py.
+// Loaded from the route built in by tools/prepare_route.py, or from the text pasted
+// in the phone settings (see RouteStore).
 class Route {
+
+    var id = null;                      // RouteStore id, null: no route
+    var hasStreets = false;             // streets installed in the storage under this id
 
     // 9 bytes per point (x, y, cumulative distance: 3 bytes each, in m).
     // Public so that the hot loops (drawing, matching) read it without a call per point.
@@ -34,14 +37,23 @@ class Route {
     var message = "";                   // shown instead of the map when there is no route
     var warning = null;                 // shown at the bottom of the overview (incomplete route)
 
-    function initialize() {
-        var text = Util.readValue("route");
-        if (text instanceof String && text.length() > 0) {
-            fromText(text);
-        } else if (RoutePack.HAS_MAP) {
-            fromPack(RoutePack.routeBin());
-        } else {
+    function initialize(routeId) {
+        id = routeId;
+        if (routeId == null) {
             fromText("");
+            return;
+        }
+        if (routeId.equals(RouteStore.PHONE)) {
+            var text = Util.readValue("route");
+            fromText(text instanceof String ? text : "");
+            return;
+        }
+        var i = RoutePack.IDS.indexOf(routeId);
+        if (i >= 0) {
+            fromPack(RoutePack.routeBin(i));
+            hasStreets = true;
+        } else {
+            message = Util.str(Rez.Strings.InvalidRoute);
         }
     }
 

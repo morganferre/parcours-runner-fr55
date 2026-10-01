@@ -16,6 +16,7 @@ class RouteMap {
     private var mTracker;
     private var mTiles;
     private var mLayer;
+    private var mInstaller;
 
     // --- Settings ---
     private var mZoom = 200;
@@ -79,6 +80,8 @@ class RouteMap {
         mRouteAway = Util.str(Rez.Strings.RouteAway);
         mOffCourseText = Util.str(Rez.Strings.OffCourse);
         mLayer = new StreetLayer();
+        mInstaller = new RouteInstaller();
+        mRoute = new Route(null);
         loadSettings();
     }
 
@@ -87,7 +90,12 @@ class RouteMap {
     // All settings (phone): reloads the route.
     function loadSettings() as Void {
         mShowDone = Util.readBool("showDone", true);
-        mRoute = new Route();
+        selectRoute(mRoute.id);
+    }
+
+    // Route chosen in the Routes menu (RouteStore id, null: none).
+    function selectRoute(id) as Void {
+        mRoute = new Route(id);
         mTracker = new RouteTracker(mRoute);
         mTiles = new StreetTiles(mRoute);
         mLayer.setTiles(mTiles);
@@ -126,7 +134,7 @@ class RouteMap {
     }
 
     private function streetsEnabled() {
-        return RoutePack.HAS_MAP && mShowStreets && mZoom <= STREETS_MAX_ZOOM;
+        return mRoute.hasStreets && mShowStreets && mZoom <= STREETS_MAX_ZOOM;
     }
 
     function hasRoute() { return mRoute.isValid(); }
@@ -137,7 +145,7 @@ class RouteMap {
     function remaining() { return mRoute.total - mTracker.progress; }
     function total() { return mRoute.total; }
     function zoom() { return mZoom; }
-    function isInstallingStreets() { return mTiles.isInstalling(); }
+    function isInstallingStreets() { return mInstaller.isBusy(); }
 
     // ================= Position (each GPS point, once per second) =================
 
@@ -235,6 +243,10 @@ class RouteMap {
 
     // Background tasks, once per second: street installation, then tile loading.
     function tick() as Void {
+        if (mInstaller.isBusy()) {
+            mInstaller.step();
+            return;
+        }
         if (mTiles.tick(mHasPos, mX, mY, mZoom, streetsEnabled())) {
             mLayer.startRender();
         }

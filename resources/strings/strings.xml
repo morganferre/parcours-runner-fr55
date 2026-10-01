@@ -60,6 +60,8 @@
     <string id="BackToExit">BACK: exit</string>
 
     <!-- Watch menus -->
+    <string id="MenuRoutes">Routes</string>
+    <string id="PhoneRoute">From the phone</string>
     <string id="MenuSport">Sport</string>
     <string id="SportRun">Running</string>
     <string id="SportBike">Cycling</string>

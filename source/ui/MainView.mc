@@ -44,6 +44,11 @@ class MainView extends WatchUi.View {
         mLap = Util.str(Rez.Strings.Lap);
     }
 
+    // Hidden by a menu (pause, back to the Routes menu): no street drawing underneath.
+    function onHide() as Void {
+        getApp().map.setVisible(false);
+    }
+
     function nextPage(step) as Void {
         mPage = (mPage + step + PAGE_COUNT) % PAGE_COUNT;
         getApp().map.setVisible(mPage == 0);     // right away: stops street drawing before the redraw

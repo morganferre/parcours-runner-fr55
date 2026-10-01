@@ -192,8 +192,6 @@ class StreetLayer {
         var b = mJb;
         var w = mW;
         var h = mH;
-        var offX = mTiles.offX;
-        var offY = mTiles.offY;
         var budget = STEP_POINTS;
         var vis = (w + h) / 2.0 / mJk + t * 0.71;
         var vis2 = vis * vis;
@@ -203,8 +201,8 @@ class StreetLayer {
         while (mJobTile < nt && budget > 0) {
             var bytes = mJobData[mJobTile];
             var key = mJobKeys[mJobTile];
-            var bx = (key / 10000 - 5000) * t + offX - mJox;
-            var by = (key % 10000 - 5000) * t + offY - mJoy;
+            var bx = (key / 10000 - 5000) * t - mJox;
+            var by = (key % 10000 - 5000) * t - mJoy;
             var cxm = bx + t / 2;
             var cym = by + t / 2;
             if (bytes == null || cxm * cxm + cym * cym > vis2) {

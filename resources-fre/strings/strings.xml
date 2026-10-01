@@ -60,6 +60,8 @@
     <string id="BackToExit">BACK : quitter</string>
 
     <!-- Menus de la montre -->
+    <string id="MenuRoutes">Parcours</string>
+    <string id="PhoneRoute">Du téléphone</string>
     <string id="MenuSport">Sport</string>
     <string id="SportRun">Course à pied</string>
     <string id="SportBike">Vélo</string>

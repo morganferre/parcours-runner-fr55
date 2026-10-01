@@ -6,68 +6,27 @@ import Toybox.System;
 
 const STREETS_MAX_ZOOM = 300;       // beyond this, too many streets to draw in one second
 
-// OSM streets built into the app by tools/prepare_route.py, in 500 m tiles.
-// Installed on first launch into the watch storage (key "t" + tile number),
-// then read tile by tile around the position.
-// Tile: for each line [point count, category], then x, y on 2 bytes (m from the corner).
+// OSM streets around the position, read tile by tile (500 m) from the watch storage,
+// where RouteInstaller copied them (keys: see RouteStore).
+// Tile: for each line [point count, category], then x, y on 2 bytes (m from the corner,
+// tiles in the route coordinates).
 // Categories: 0 street, 1 main road, 2 path, 3 waterway or water body.
 class StreetTiles {
 
     // Tiles loaded around the position, from nearest to farthest (null: empty tile).
     var keys = [] as Array<Number>;
     var data = [] as Array<ByteArray or Null>;
-    // Position of the tile grid origin in the route coordinates (m).
-    var offX = 0.0;
-    var offY = 0.0;
-    private var mUnpack = -1;           // next chunk to install, -1 when done
+    private var mRouteId = null;
 
     function initialize(route) {
-        if (!RoutePack.HAS_MAP) { return; }
-        if (RoutePack.CHUNKS > 0) {
-            var installed = null;
-            try { installed = Storage.getValue("pack"); } catch (e) { }
-            if (installed == null || !installed.equals(RoutePack.PACK_ID)) {
-                try { Storage.clearValues(); } catch (e) { }
-                mUnpack = 0;
-            }
-        }
-        offX = ((RoutePack.LON0 / 1000000.0d - route.lon0) * M_PER_DEG_LON * route.cosLat0).toFloat();
-        offY = ((RoutePack.LAT0 / 1000000.0d - route.lat0) * M_PER_DEG_LAT).toFloat();
+        if (route.hasStreets) { mRouteId = route.id; }
     }
 
-    function isInstalling() { return mUnpack >= 0; }
-
-    // Once per second: installation first, then the tiles around (x, y).
-    // enabled: streets shown at this zoom. Returns true when new tiles were loaded.
+    // Once per second: the tiles around (x, y). enabled: streets shown at this zoom.
+    // Returns true when new tiles were loaded.
     function tick(hasPos, x, y, zoom, enabled) {
-        if (mUnpack >= 0) {
-            for (var i = 0; i < 3 && mUnpack >= 0; i++) { unpackChunk(); }
-            return false;
-        }
         if (!hasPos) { return false; }
         return update(x, y, zoom, enabled);
-    }
-
-    private function unpackChunk() as Void {
-        var c = RoutePack.chunk(mUnpack);
-        if (c instanceof Array) {
-            for (var i = 0; i + 1 < c.size(); i += 2) {
-                try {
-                    Storage.setValue("t" + c[i], c[i + 1]);
-                } catch (e) {
-                    // Storage full: keep the streets already installed.
-                    try { Storage.setValue("pack", RoutePack.PACK_ID); } catch (e2) { }
-                    mUnpack = -1;
-                    return;
-                }
-            }
-        }
-        c = null;
-        mUnpack++;
-        if (mUnpack >= RoutePack.CHUNKS) {
-            Storage.setValue("pack", RoutePack.PACK_ID);
-            mUnpack = -1;
-        }
     }
 
     private function tileKey(tx, ty) {
@@ -75,7 +34,7 @@ class StreetTiles {
     }
 
     private function update(x, y, zoom, enabled) {
-        if (!RoutePack.HAS_MAP || !enabled) {
+        if (mRouteId == null || !enabled) {
             if (keys.size() > 0) {
                 keys = [] as Array<Number>;
                 data = [] as Array<ByteArray or Null>;
@@ -84,8 +43,8 @@ class StreetTiles {
         }
         var t = RoutePack.TILE;
         var r = zoom * 1.3;
-        var mx = x - offX;
-        var my = y - offY;
+        var mx = x;
+        var my = y;
         var x0 = Math.floor((mx - r) / t).toNumber();
         var x1 = Math.floor((mx + r) / t).toNumber();
         var y0 = Math.floor((my - r) / t).toNumber();
@@ -120,7 +79,7 @@ class StreetTiles {
                 continue;
             }
             if (loaded >= 3 || System.getSystemStats().freeMemory < 8000) { continue; }
-            var s = Storage.getValue("t" + k);
+            var s = Storage.getValue(RouteStore.tileKey(mRouteId, k));
             newKeys.add(k);
             if (s instanceof String) {
                 newData.add(StringUtil.convertEncodedString(s, {

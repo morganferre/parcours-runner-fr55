@@ -50,6 +50,16 @@ python tools\prepare_route.py chemin\vers\mon_parcours.gpx
 Le script télécharge les rues autour du parcours (OpenStreetMap, connexion Internet nécessaire),
 les intègre à l'appli et compile `bin\ParcoursRunner.prg`.
 
+Plusieurs parcours : donnez plusieurs GPX d'un coup. La montre affiche alors un menu **Parcours**
+à l'ouverture (le nom vient du nom du fichier, `_` remplacés par des espaces) :
+
+```
+python tools\prepare_route.py tools\tour_du_lac.gpx tools\centre_ville.gpx tools\foret.gpx
+```
+
+Les rues de tous les parcours doivent tenir dans la montre (environ 110 Ko) : le script affiche
+la place prise par chacun.
+
 Options utiles :
 
 | Option | Effet |
@@ -58,7 +68,7 @@ Options utiles :
 | `--points 2000` | tracé plus précis (défaut : 60 points par km, jusqu'à 4 000) |
 | `--reverse` | parcourir le GPX dans l'autre sens |
 | `--flip-start` | aller-retour : partir de l'autre bout |
-| `--name "Tour du lac"` | nom du parcours |
+| `--name "Tour du lac"` | nom du parcours (avec un seul GPX) |
 | `--key chemin\developer_key` | clé développeur, si elle n'est pas réglée dans VS Code |
 | `--no-map` | revenir à la version sans parcours intégré |
 
@@ -77,18 +87,18 @@ sous le nom **Parcours Runner**.
 Au premier lancement d'un nouveau parcours, la montre range les rues dans son stockage
 (quelques secondes, « Préparation rues... » en bas de la carte).
 
-Pour changer de parcours : relancez l'étape 3 avec un autre GPX, puis l'étape 4.
+Pour changer les parcours de la montre : relancez l'étape 3 avec d'autres GPX, puis l'étape 4.
 
 ## Pendant la course
 
-À l'ouverture de l'appli, choisissez **Course à pied** ou **Vélo** (START ; le dernier sport utilisé
-est présélectionné). Le GPS cherche pendant ce temps. En vélo, les allures sont remplacées par une
+À l'ouverture de l'appli, choisissez le **parcours** (s'il y en a plusieurs), puis **Course à pied**
+ou **Vélo** (START à chaque fois ; les derniers choix sont présélectionnés). Le GPS cherche pendant ce temps. En vélo, les allures sont remplacées par une
 vitesse en km/h et le tour automatique est séparé (5 km par défaut).
 
 | Bouton | Avant le départ | Pendant la course | En pause |
 |---|---|---|---|
 | **START** | démarrer | pause + menu | menu pause |
-| **BACK** | quitter l'appli | nouveau tour | menu pause |
+| **BACK** | retour au menu Parcours (ou quitter) | nouveau tour | menu pause |
 | **UP / DOWN** | changer d'écran | changer d'écran | changer d'écran |
 | **UP maintenu** | réglages | réglages | réglages |
 
@@ -146,11 +156,14 @@ source/RoutePack.mc                GÉNÉRÉ par tools/prepare_route.py (parcour
 source/activity/RunSession.mc      enregistrement FIT (course ou vélo), pause, tours, allures
 source/route/Route.mc              points du parcours (intégré ou collé depuis le téléphone)
 source/route/RouteTracker.mc       position sur le parcours, progression, alerte hors parcours
+source/route/RouteStore.mc         liste des parcours de la montre, parcours choisi
+source/route/RouteInstaller.mc     copie des rues des parcours dans la montre (1er lancement)
 source/map/RouteMap.mc             écran carte : position, cap, animation, dessin
 source/map/StreetTiles.mc          rues : installation dans la montre, carrés autour de la position
 source/map/StreetLayer.mc          rues : dessin en arrière-plan dans deux images alternées
 source/ui/MainView.mc              les 3 écrans (carte, données, tour)
 source/ui/MainDelegate.mc          boutons
+source/ui/RouteMenu.mc             choix du parcours à l'ouverture (s'il y en a plusieurs)
 source/ui/SportMenu.mc             choix course à pied / vélo à l'ouverture
 source/ui/PauseMenu.mc             menu pause (reprendre, enregistrer, supprimer)
 source/ui/SettingsMenu.mc          menu réglages (UP maintenu)
