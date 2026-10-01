@@ -1,5 +1,6 @@
 import Toybox.Application;
 import Toybox.Lang;
+import Toybox.Math;
 import Toybox.WatchUi;
 
 // Settings access, translated texts and formatting of displayed values.
@@ -77,6 +78,13 @@ module Util {
     function km(meters) {
         if (meters == null) { meters = 0; }
         return (meters / 1000.0).format("%.2f");
+    }
+
+    // Angle brought back between -pi and pi (radians).
+    function angle(a) {
+        while (a > Math.PI) { a -= 2 * Math.PI; }
+        while (a < -Math.PI) { a += 2 * Math.PI; }
+        return a;
     }
 
     // Readable distance: "850 m" or "3.4 km"

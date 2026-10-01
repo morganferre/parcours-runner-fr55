@@ -24,3 +24,6 @@ resources/route_pack/
 
 # Claude Code notes (personal project state)
 CLAUDE.md
+
+# Simulator test file, only copied into source/ while testing
+source/DebugFeed.mc

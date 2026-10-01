@@ -140,16 +140,25 @@ pour l'espagnol, `resources-deu` pour l'allemand), traduisez les textes, puis aj
 ## Organisation du code
 
 ```
-source/ParcoursRunnerApp.mc   démarrage, GPS, cardio, minuterie
-source/RunSession.mc          enregistrement FIT, pause, tours, allures
-source/RouteMap.mc            parcours, rues, position, hors-parcours, dessin de la carte
-source/Views.mc               les 3 écrans et le résumé de fin
-source/Input.mc               boutons, menu pause, menu réglages
-source/Util.mc                réglages, textes traduits, mise en forme des temps et allures
-source/RoutePack.mc           GÉNÉRÉ par tools/prepare_route.py (parcours et rues intégrés)
-resources/route_pack/         GÉNÉRÉ par tools/prepare_route.py (non versionné)
-resources*/strings/           textes de la montre, par langue
-tools/                        préparation des parcours, installation, simulateur, polices, convertisseur web
+source/ParcoursRunnerApp.mc        démarrage, GPS, cardio, minuterie
+source/Util.mc                     réglages, textes traduits, mise en forme des temps et allures
+source/RoutePack.mc                GÉNÉRÉ par tools/prepare_route.py (parcours et rues intégrés)
+source/activity/RunSession.mc      enregistrement FIT (course ou vélo), pause, tours, allures
+source/route/Route.mc              points du parcours (intégré ou collé depuis le téléphone)
+source/route/RouteTracker.mc       position sur le parcours, progression, alerte hors parcours
+source/map/RouteMap.mc             écran carte : position, cap, animation, dessin
+source/map/StreetTiles.mc          rues : installation dans la montre, carrés autour de la position
+source/map/StreetLayer.mc          rues : dessin en arrière-plan dans deux images alternées
+source/ui/MainView.mc              les 3 écrans (carte, données, tour)
+source/ui/MainDelegate.mc          boutons
+source/ui/SportMenu.mc             choix course à pied / vélo à l'ouverture
+source/ui/PauseMenu.mc             menu pause (reprendre, enregistrer, supprimer)
+source/ui/SettingsMenu.mc          menu réglages (UP maintenu)
+source/ui/SummaryView.mc           résumé de fin
+resources/route_pack/              GÉNÉRÉ par tools/prepare_route.py (non versionné)
+resources*/strings/                textes de la montre, par langue
+tools/                             préparation des parcours, installation, simulateur, polices, convertisseur web
+tools/debug/DebugFeed.mc           test au simulateur : fausse sortie le long du parcours
 ```
 
 `tools/converter.html` (à ouvrir dans un navigateur) transforme un GPX en texte à coller dans les
