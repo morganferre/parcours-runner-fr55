@@ -40,11 +40,16 @@ cd parcours-runner-fr55
 
 ### 3. Préparer un parcours
 
-Exportez votre parcours en GPX (Garmin Connect, Strava, Komoot, Visorando…), puis dans un terminal,
-depuis le dossier du projet :
+**Pas encore de GPX ?** Créez-le, même depuis le téléphone, avec [gpx.studio](https://gpx.studio)
+(gratuit, dans le navigateur) : touchez la carte pour poser les points, le tracé suit les rues
+et les chemins (choisissez à pied ou à vélo), puis **Exporter** › GPX. Garmin Connect, Strava,
+Komoot ou Visorando savent aussi exporter un parcours en GPX.
+
+Copiez le GPX dans le dossier `tools\` du projet (les `tools\*.gpx` ne sont jamais publiés), puis
+dans un terminal, depuis le dossier du projet :
 
 ```
-python tools\prepare_route.py chemin\vers\mon_parcours.gpx
+python tools\prepare_route.py tools\mon_parcours.gpx
 ```
 
 Le script télécharge les rues autour du parcours (OpenStreetMap, connexion Internet nécessaire),
@@ -191,13 +196,9 @@ source/ui/SettingsMenu.mc          menu réglages (UP maintenu)
 source/ui/SummaryView.mc           résumé de fin
 resources/route_pack/              GÉNÉRÉ par tools/prepare_route.py (non versionné)
 resources*/strings/                textes de la montre, par langue
-tools/                             préparation des parcours, installation, simulateur, polices, convertisseur web
+tools/                             préparation et envoi des parcours, installation, simulateur, polices
 tools/debug/DebugFeed.mc           test au simulateur : fausse sortie le long du parcours
 ```
-
-`tools/converter.html` (à ouvrir dans un navigateur) transforme un GPX en texte à coller dans les
-réglages de l'appli depuis le téléphone : parcours seul, sans les rues, et seulement si l'appli
-est installée depuis le Connect IQ Store.
 
 `tools/generate_fonts.py` régénère les polices de chiffres (nécessite Pillow et la police
 Bahnschrift de Windows) ; inutile sauf pour modifier leur dessin.

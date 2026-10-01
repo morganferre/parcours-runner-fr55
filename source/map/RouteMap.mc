@@ -347,8 +347,6 @@ class RouteMap {
             drawBottom(dc, w, h, Lang.format(mRouteAway, [Util.dist(tracker.offDist)]), accent);
         } else if (live && tracker.offCourse) {
             drawBottom(dc, w, h, Lang.format(mOffCourseText, [tracker.offDist.toNumber()]), Graphics.COLOR_RED);
-        } else if (!live && mRoute.warning != null) {
-            drawBottom(dc, w, h, mRoute.warning, Graphics.COLOR_RED);
         } else {
             drawBottom(dc, w, h, bottom, bottomColor);
         }

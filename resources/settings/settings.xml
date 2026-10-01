@@ -1,8 +1,4 @@
 <settings>
-    <setting propertyKey="@Properties.route" title="@Strings.RouteTitle" prompt="@Strings.RoutePrompt">
-        <settingConfig type="alphaNumeric"/>
-    </setting>
-
     <setting propertyKey="@Properties.zoom" title="@Strings.ZoomTitle">
         <settingConfig type="list">
             <listEntry value="100">@Strings.Zoom100</listEntry>

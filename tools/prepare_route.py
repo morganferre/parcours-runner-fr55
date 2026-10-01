@@ -2,7 +2,7 @@
 Prepares one or more routes WITH the surrounding streets for the Parcours Runner app (Forerunner 55).
 
 Steps, for each GPX:
-  1. reads the GPX and simplifies the track (like the web converter);
+  1. reads the GPX and simplifies the track;
   2. downloads the surrounding streets and paths from OpenStreetMap (Overpass server);
   3. keeps those within --width meters of the route, simplifies them
      and sorts them into 500 m tiles;
@@ -46,7 +46,6 @@ PRG = ROOT / "bin" / "ParcoursRunner.prg"
 # Must stay identical to the watch code (source/RouteMap.mc).
 M_LAT = 110574.0
 M_LON = 111320.0
-ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
 TILE = 500
 
 OVERPASS = [
@@ -82,16 +81,6 @@ def info(msg):
 def stop(msg):
     print("\nERROR: " + msg, file=sys.stderr)
     sys.exit(1)
-
-
-def enc(d):
-    """Signed integer -> text (zigzag + 5-bit chunks, same encoding as the watch)."""
-    z = d * 2 if d >= 0 else -d * 2 - 1
-    s = ""
-    while z >= 32:
-        s += ALPHA[32 + (z & 31)]
-        z //= 32
-    return s + ALPHA[z]
 
 
 def simplify(p, eps):
@@ -179,14 +168,9 @@ def prepare_track(pts, max_pts):
             break
         eps *= 1.25
 
-    data, px, py = "", 0, 0
-    for x, y in ints:
-        data += enc(x - px) + enc(y - py)
-        px, py = x, y
-    text = f"P1;{len(ints)};{lat0e6};{lon0e6};{data}"
     dist = sum(math.hypot(ints[i][0] - ints[i - 1][0], ints[i][1] - ints[i - 1][1]) for i in range(1, len(ints)))
     return {
-        "text": text, "ints": ints, "xy": xy, "dist": dist,
+        "ints": ints, "xy": xy, "dist": dist,
         "lat0e6": lat0e6, "lon0e6": lon0e6, "la0": la0, "lo0": lo0, "cos0": cos0,
     }
 

@@ -46,17 +46,15 @@ class RouteMenu extends LiveMenu {
         var routes = RouteStore.list();
         var current = RouteStore.current(routes);
         var focus = 0;
-        var managed = false;
         for (var i = 0; i < routes.size(); i++) {
             var r = routes[i];
-            add(r[1], r[2] == null ? null : Util.dist(r[2]), r[0]);
+            add(r[1], Util.dist(r[2]), r[0]);
             if (r[0].equals(current)) { focus = i; }
-            if (r[3] != RouteStore.KIND_PHONE) { managed = true; }
         }
         if (RouteStore.canDownload()) {
             add(Util.str(Rez.Strings.MenuDownload), null, :download);
         }
-        if (managed) {
+        if (routes.size() > 0) {
             add(Util.str(Rez.Strings.MenuManage),
                 Util.fmt(Rez.Strings.StorageUse, [RouteStore.usedKb(), RouteStore.CAPACITY_KB]), :manage);
         }
@@ -100,14 +98,11 @@ class ManageMenu extends LiveMenu {
 
     function fill() as Void {
         var routes = RouteStore.list();
-        var count = 0;
         for (var i = 0; i < routes.size(); i++) {
             var r = routes[i];
-            if (r[3] == RouteStore.KIND_PHONE) { continue; }
             add(r[1], Util.fmt(Rez.Strings.SizeKb, [(RouteStore.sizeOf(r[0]) + 1023) / 1024]), r[0]);
-            count++;
         }
-        if (count == 0) { add(Util.str(Rez.Strings.NoRoutes), null, :none); }
+        if (routes.size() == 0) { add(Util.str(Rez.Strings.NoRoutes), null, :none); }
     }
 }
 

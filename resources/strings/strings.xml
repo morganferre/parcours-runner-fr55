@@ -3,8 +3,6 @@
     <string id="AppName">Parcours Runner</string>
 
     <!-- Phone settings (Connect IQ app) -->
-    <string id="RouteTitle">Route (text from the converter, empty = built-in route)</string>
-    <string id="RoutePrompt">Paste the text starting with P1; here</string>
 
     <string id="ZoomTitle">Map zoom</string>
     <string id="Zoom100">100 m (very close)</string>
@@ -52,16 +50,14 @@
     <string id="Finish">FINISH</string>
     <string id="RouteAway">Route $1$ away</string>
     <string id="OffCourse">OFF COURSE $1$ m</string>
-    <string id="NoRoute">No route\n\nPrepare one with\nprepare_route.py</string>
+    <string id="NoRoute">No route\n\nRoutes > Download\nor prepare_route.py</string>
     <string id="InvalidRoute">Invalid route</string>
-    <string id="Incomplete">Incomplete $1$/$2$ pts</string>
     <string id="RunSaved">RUN SAVED</string>
     <string id="RideSaved">RIDE SAVED</string>
     <string id="BackToExit">BACK: exit</string>
 
     <!-- Watch menus -->
     <string id="MenuRoutes">Routes</string>
-    <string id="PhoneRoute">From the phone</string>
     <string id="MenuDownload">Download...</string>
     <string id="MenuManage">Manage...</string>
     <string id="StorageUse">$1$ / $2$ KB</string>

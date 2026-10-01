@@ -2,7 +2,6 @@ import Toybox.Application.Storage;
 import Toybox.Lang;
 
 // The routes available on the watch and the one chosen:
-//   - route pasted as text in the phone settings (no streets),
 //   - routes built into the app by tools/prepare_route.py (RoutePack), unless deleted,
 //   - routes downloaded from the secret gist (RouteDownloader).
 // Watch storage:
@@ -13,8 +12,6 @@ import Toybox.Lang;
 //   "cur"  route chosen
 module RouteStore {
 
-    const PHONE = "phone";              // id of the route pasted in the phone settings
-    const KIND_PHONE = 0;
     const KIND_BUILTIN = 1;
     const KIND_DOWNLOADED = 2;
     const CAPACITY_KB = 110;            // storage available for the routes (measured)
@@ -32,13 +29,9 @@ module RouteStore {
         return (v instanceof Array) ? v : [];
     }
 
-    // [[id, name, length in m or null, kind], ...]
+    // [[id, name, length in m, kind], ...]
     function list() {
         var out = [];
-        var text = Util.readValue("route");
-        if (text instanceof String && text.length() > 0) {
-            out.add([PHONE, Util.str(Rez.Strings.PhoneRoute), null, KIND_PHONE]);
-        }
         var hiddenIds = arrayOf("hid");
         for (var i = 0; i < RoutePack.COUNT; i++) {
             if (hiddenIds.indexOf(RoutePack.IDS[i]) < 0) {

@@ -1,5 +1,4 @@
 <properties>
-    <property id="route" type="string"></property>
     <property id="zoom" type="number">200</property>
     <property id="orientation" type="number">0</property>
     <property id="theme" type="number">0</property>
