@@ -21,6 +21,8 @@ const STREETS_MAX_ZOOM = 300;       // beyond this, too many streets to draw in 
 const ANIM_MS = 1000;               // the view glides to the new GPS point in 1 s (GPS interval)
 const STEP_POINTS = 300;            // street points drawn per step. The watch kills the app beyond
                                     // about 700 points in a single task (measured in the simulator).
+const REDRAW_PX = 6;                // streets redrawn once the view has moved this many pixels away
+const REDRAW_ANGLE = 0.1;           // ...or turned this much (rad, about 6°)
 
 // Route, OSM streets, GPS position, route tracking and off-course alerts.
 class RouteMap {
@@ -113,6 +115,7 @@ class RouteMap {
     private var mVk = 1.0;
     private var mVc = 1.0;
     private var mVs = 0.0;
+    private var mVh = 0.0;              // heading the view is rotated by (track-up)
 
     // --- OSM streets ---
     private var mMapOffX = 0.0;
@@ -126,6 +129,7 @@ class RouteMap {
     private var mShow = -1;             // bitmap ready to show (-1: none)
     private var mWork = 0;              // bitmap being drawn
     private var mJob = false;
+    private var mPending = false;       // a redraw was asked while drawing or off the map screen
     private var mJobKeys = null;
     private var mJobData = null;
     private var mJobTile = 0;
@@ -547,7 +551,7 @@ class RouteMap {
         mANY = mDNY;
         mAT = System.getTimer();
         mAnimOn = dx * dx + dy * dy > 0.25 || angle(mHeading - mDH).abs() > 0.01;
-        startRender();
+        maybeRender();
     }
 
     private function angle(a) {
@@ -572,11 +576,7 @@ class RouteMap {
     // Called FPS times per second: true if the map screen must be redrawn.
     function frame() {
         if (!mVisible || !animate()) { return false; }
-        // Track-up map: the street bitmap does not rotate by itself,
-        // so it is redrawn as soon as the displayed heading drifts more than 6° away from it.
-        if (mTrackUp && mHeadingOk && !mJob && mShow >= 0 && angle(mDH - mSH).abs() > 0.1) {
-            startRender();
-        }
+        maybeRender();
         return true;
     }
 
@@ -586,10 +586,16 @@ class RouteMap {
         if (v == mVisible) { return; }
         mVisible = v;
         if (v) {
-            startRender();
+            if (mPending) {
+                mPending = false;
+                startRender();
+            } else {
+                maybeRender();
+            }
         } else if (mJob) {
             mJob = false;
             mTimer.stop();
+            mPending = true;
         }
     }
 
@@ -906,8 +912,8 @@ class RouteMap {
     // Tile: for each line [point count, category], then x, y on 2 bytes (m from the corner).
     // Categories: 0 street, 1 main road, 2 path, 3 waterway or water body.
 
-    // View centered on the runner (same as in draw()).
-    private function setupLiveView(w, h) as Void {
+    // View centered on the runner, rotated by heading hd on a track-up map.
+    private function setupLiveView(w, h, hd) as Void {
         mVcx = w / 2.0;
         mVcy = h / 2.0;
         mVox = mDX;
@@ -915,11 +921,13 @@ class RouteMap {
         mVk = (w / 2.0) / mZoom;
         mVc = 1.0;
         mVs = 0.0;
+        mVh = 0.0;
         if (mTrackUp) {
             mVcy = h * 0.60;
             if (mHeadingOk) {
-                mVc = Math.cos(mDH);
-                mVs = Math.sin(mDH);
+                mVh = hd;
+                mVc = Math.cos(hd);
+                mVs = Math.sin(hd);
             }
         }
     }
@@ -928,9 +936,29 @@ class RouteMap {
         return mHasPos && RoutePack.HAS_MAP && mShowStreets && mZoom <= STREETS_MAX_ZOOM;
     }
 
-    // Starts (or restarts) drawing the streets for the current position.
+    // Redraws the streets only when the displayed bitmap no longer matches the view:
+    // running in a straight line, that is every few seconds instead of every second.
+    private function maybeRender() as Void {
+        if (mJob || !mVisible || !streetsOn()) { return; }
+        var redraw = mShow < 0;
+        if (!redraw) {
+            var k = mW / 2.0 / mZoom;
+            var dx = (mDX - mSX) * k;
+            var dy = (mDY - mSY) * k;
+            redraw = dx * dx + dy * dy > REDRAW_PX * REDRAW_PX
+                || (mTrackUp && mHeadingOk && angle(mDH - mSH).abs() > REDRAW_ANGLE);
+        }
+        if (redraw) { startRender(); }
+    }
+
+    // Starts drawing the streets for the current position. A drawing in progress is never
+    // thrown away: the new one starts when it is finished (or when the map screen comes back).
     function startRender() as Void {
-        if (!mVisible || !streetsOn() || mTileKeys.size() == 0) { return; }
+        if (!streetsOn() || mTileKeys.size() == 0) { return; }
+        if (!mVisible || mJob) {
+            mPending = true;
+            return;
+        }
         if (mBmp[0] == null || mBmpBg != bg) {
             var pal = [bg, Graphics.COLOR_DK_BLUE, Graphics.COLOR_GREEN, 0x00FFFF];
             mBmp = [
@@ -940,14 +968,14 @@ class RouteMap {
             mBmpBg = bg;
             mShow = -1;
         }
-        setupLiveView(mW, mH);
+        setupLiveView(mW, mH, mDH);
         mJa = mVc * mVk;
         mJb = mVs * mVk;
         mJox = mVox;
         mJoy = mVoy;
         mJcx = mVcx;
         mJcy = mVcy;
-        mJh = mDH;
+        mJh = mVh;
         mJobKeys = mTileKeys;
         mJobData = mTileData;
         mJobTile = 0;
@@ -957,11 +985,9 @@ class RouteMap {
         var bdc = mBmp[mWork].getDc();
         bdc.setColor(bg, bg);
         bdc.clear();
-        if (!mJob) {
-            mJob = true;
-            if (mTimer == null) { mTimer = new Timer.Timer(); }
-            mTimer.start(method(:renderStep), 50, true);
-        }
+        mJob = true;
+        if (mTimer == null) { mTimer = new Timer.Timer(); }
+        mTimer.start(method(:renderStep), 50, true);
     }
 
     // One step: about STEP_POINTS points, then yield (new task 50 ms later).
@@ -1048,6 +1074,12 @@ class RouteMap {
             mSX = mJox;
             mSY = mJoy;
             mSH = mJh;
+            if (mPending) {
+                mPending = false;
+                startRender();
+            } else {
+                maybeRender();
+            }
             WatchUi.requestUpdate();
         }
     }
@@ -1082,9 +1114,12 @@ class RouteMap {
         mVs = 0.0;
         if (live) {
             animate();
-            setupLiveView(w, h);
             // Streets: bitmap pre-drawn in the background, shifted by the distance moved since.
-            if (mShow >= 0 && streetsOn()) {
+            // The bitmap cannot be rotated, so the whole map (route included) keeps the heading
+            // it was drawn with: route and streets turn together, only the arrow turns right away.
+            var streets = mShow >= 0 && streetsOn();
+            setupLiveView(w, h, streets ? mSH : mDH);
+            if (streets) {
                 var ox = toScreenX(mSX, mSY) - mVcx;
                 var oy = toScreenY(mSX, mSY) - mVcy;
                 dc.drawBitmap(ox.toNumber(), oy.toNumber(), mBmp[mShow]);
@@ -1233,7 +1268,7 @@ class RouteMap {
             dc.fillCircle(cx, cy, 7);
             return;
         }
-        var a = mTrackUp ? 0.0 : mDH;
+        var a = mTrackUp ? mDH - mVh : mDH;
         var ca = Math.cos(a);
         var sa = Math.sin(a);
         var shape = [[0, -12], [9, 10], [0, 5], [-9, 10]];

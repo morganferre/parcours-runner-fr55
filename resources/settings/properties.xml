@@ -6,7 +6,9 @@
     <property id="lineWidth" type="number">3</property>
     <property id="showDone" type="boolean">true</property>
     <property id="showStreets" type="boolean">true</property>
+    <property id="sport" type="number">0</property>
     <property id="autoLap" type="number">1000</property>
+    <property id="autoLapBike" type="number">5000</property>
     <property id="alertOn" type="boolean">true</property>
     <property id="alertTone" type="boolean">true</property>
     <property id="alertDist" type="number">40</property>

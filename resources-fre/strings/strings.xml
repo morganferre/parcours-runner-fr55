@@ -56,9 +56,13 @@
     <string id="InvalidRoute">Parcours invalide</string>
     <string id="Incomplete">Incomplet $1$/$2$ pts</string>
     <string id="RunSaved">COURSE ENREGISTRÉE</string>
+    <string id="RideSaved">SORTIE ENREGISTRÉE</string>
     <string id="BackToExit">BACK : quitter</string>
 
     <!-- Menus de la montre -->
+    <string id="MenuSport">Sport</string>
+    <string id="SportRun">Course à pied</string>
+    <string id="SportBike">Vélo</string>
     <string id="MenuPause">Pause</string>
     <string id="MenuResume">Reprendre</string>
     <string id="MenuSave">Enregistrer</string>

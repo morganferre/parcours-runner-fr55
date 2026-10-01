@@ -67,10 +67,10 @@ module Util {
         return (s / 60) + ":" + (s % 60).format("%02d");
     }
 
-    // Pace from a time (ms) and a distance (m)
-    function paceOf(ms, meters) {
-        if (meters == null || meters < 20 || ms == null || ms <= 0) { return "--:--"; }
-        return pace(meters / (ms / 1000.0));
+    // Speed in km/h from a speed in m/s: 6.94 -> "25.0"
+    function kmh(speed) {
+        if (speed == null || speed < 0.6) { return "--.-"; }
+        return (speed * 3.6).format("%.1f");
     }
 
     // 12345.6 m -> "12.35"

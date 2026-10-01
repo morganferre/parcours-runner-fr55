@@ -84,7 +84,7 @@ class MainView extends WatchUi.View {
             text = mPaused;
             color = Graphics.COLOR_YELLOW;
         } else {
-            text = Util.pace(run.speed());
+            text = run.speedText(run.speed());
             var hr = run.heartRate();
             if (hr != null) { text += "   " + hr; }
         }
@@ -103,7 +103,7 @@ class MainView extends WatchUi.View {
         header(dc, map, run, w);
 
         centeredText(dc, map.fg, w / 2, 46, mMedium, Util.time(run.elapsedTime()));
-        valueWithUnit(dc, map, w / 2, 81, mLarge, LARGE_TOP + LARGE_H, Util.pace(run.speed()), "/km");
+        valueWithUnit(dc, map, w / 2, 81, mLarge, LARGE_TOP + LARGE_H, run.speedText(run.speed()), run.speedUnit());
         valueWithUnit(dc, map, w / 2, 146, mMedium, MEDIUM_TOP + MEDIUM_H, Util.km(run.distance()), "km");
     }
 
@@ -124,9 +124,9 @@ class MainView extends WatchUi.View {
         var lapMs = run.lapTime();
         centeredText(dc, map.fg, w / 2, 46, mMedium, Util.time(lapMs));
         valueWithUnit(dc, map, w / 2, 81, mLarge, LARGE_TOP + LARGE_H,
-            Util.paceOf(lapMs, run.lapDistance()), "/km");
+            run.speedOf(lapMs, run.lapDistance()), run.speedUnit());
         valueWithUnit(dc, map, w / 2, 146, mMedium, MEDIUM_TOP + MEDIUM_H,
-            Util.pace(run.averageSpeed()), mAverage);
+            run.speedText(run.averageSpeed()), mAverage);
     }
 
     // ---------------- Shared elements ----------------
@@ -237,7 +237,7 @@ class MainView extends WatchUi.View {
         dc.drawRoundedRectangle(x, y, bw, bh, 10);
 
         dc.drawText(w / 2, y + 4, Graphics.FONT_XTINY, Lang.format(mLap, [t[0]]), Graphics.TEXT_JUSTIFY_CENTER);
-        valueWithUnit(dc, map, w / 2, y + 20, mLarge, LARGE_TOP + LARGE_H, Util.paceOf(t[1], t[2]), "/km");
+        valueWithUnit(dc, map, w / 2, y + 20, mLarge, LARGE_TOP + LARGE_H, run.speedOf(t[1], t[2]), run.speedUnit());
         dc.setColor(map.fg, Graphics.COLOR_TRANSPARENT);
         dc.drawText(w / 2, y + bh - 26, Graphics.FONT_XTINY,
             Util.time(t[1]) + "   " + Util.km(t[2]) + " km", Graphics.TEXT_JUSTIFY_CENTER);
@@ -264,7 +264,9 @@ class SummaryView extends WatchUi.View {
 
     private var mTime;
     private var mDist;
-    private var mAvgSpeed;
+    private var mAvgSpeed;              // already formatted: pace or km/h
+    private var mUnit;
+    private var mTitle;
     private var mLarge = null;
     private var mMedium = null;
 
@@ -273,6 +275,8 @@ class SummaryView extends WatchUi.View {
         mTime = summary[0];
         mDist = summary[1];
         mAvgSpeed = summary[2];
+        mUnit = summary[3];
+        mTitle = summary[4];
     }
 
     function onLayout(dc as Graphics.Dc) as Void {
@@ -289,17 +293,17 @@ class SummaryView extends WatchUi.View {
         dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(5);
         dc.drawCircle(w / 2, h / 2, w / 2 - 3);
-        dc.drawText(w / 2, 20, Graphics.FONT_XTINY, Util.str(Rez.Strings.RunSaved), c);
+        dc.drawText(w / 2, 20, Graphics.FONT_XTINY, mTitle, c);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(w / 2, 44, mLarge, Util.km(mDist), c);
         dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
         dc.drawText(w / 2, 100, Graphics.FONT_XTINY, "km", c);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(w * 0.32, 124, mMedium, Util.time(mTime), c);
-        dc.drawText(w * 0.68, 124, mMedium, Util.pace(mAvgSpeed), c);
+        dc.drawText(w * 0.68, 124, mMedium, mAvgSpeed, c);
         dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
         dc.drawText(w * 0.32, 158, Graphics.FONT_XTINY, Util.str(Rez.Strings.Time), c);
-        dc.drawText(w * 0.68, 158, Graphics.FONT_XTINY, "/km", c);
+        dc.drawText(w * 0.68, 158, Graphics.FONT_XTINY, mUnit, c);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(w / 2, h - 34, Graphics.FONT_XTINY, Util.str(Rez.Strings.BackToExit), c);
     }

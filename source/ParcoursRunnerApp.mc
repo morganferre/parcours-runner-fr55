@@ -58,9 +58,9 @@ class ParcoursRunnerApp extends Application.AppBase {
         }
     }
 
+    // Sport menu first, then the main view (see SportMenuDelegate).
     function getInitialView() {
-        var view = new MainView();
-        return [view, new MainDelegate(view)];
+        return [sportMenu(), new SportMenuDelegate()];
     }
 
     // Settings changed from the Connect IQ phone app.

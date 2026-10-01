@@ -3,7 +3,7 @@
 [English](README.md) · **Français**
 
 Application Connect IQ pour la **Garmin Forerunner 55** : suivez un parcours GPX sur la montre,
-avec les rues OpenStreetMap autour, et enregistrez une vraie activité **Course à pied**
+avec les rues OpenStreetMap autour, et enregistrez une vraie activité **Course à pied** ou **Vélo**
 (synchronisée avec Garmin Connect et Strava : GPS, distance, allure, FC, cadence, tours).
 
 - carte du parcours avec rues, chemins et cours d'eau, déjà couru en couleur ;
@@ -81,6 +81,10 @@ Pour changer de parcours : relancez l'étape 3 avec un autre GPX, puis l'étape 
 
 ## Pendant la course
 
+À l'ouverture de l'appli, choisissez **Course à pied** ou **Vélo** (START ; le dernier sport utilisé
+est présélectionné). Le GPS cherche pendant ce temps. En vélo, les allures sont remplacées par une
+vitesse en km/h et le tour automatique est séparé (5 km par défaut).
+
 | Bouton | Avant le départ | Pendant la course | En pause |
 |---|---|---|---|
 | **START** | démarrer | pause + menu | menu pause |
@@ -95,7 +99,7 @@ Les écrans :
 2. **Données** : temps, distance, allure, FC.
 3. **Tour** : temps et allure du tour en cours, distance du tour, allure moyenne.
 
-Tour automatique tous les km (réglable) : vibration et fenêtre « TOUR 3 » avec l'allure du km.
+Tour automatique tous les km (tous les 5 km en vélo, réglable) : vibration et fenêtre « TOUR 3 » avec l'allure du tour.
 
 Réglages (UP maintenu) : zoom, orientation, rues oui/non, fond noir ou blanc, tour automatique.
 

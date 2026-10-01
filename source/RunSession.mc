@@ -9,12 +9,16 @@ const STATE_RUNNING = 1;
 const STATE_PAUSED = 2;
 const STATE_DONE = 3;
 
-// Run recording (FIT "Running" activity, synced with Garmin Connect)
-// and the displayed values: time, distance, paces, laps.
+const SPORT_RUN = 0;
+const SPORT_BIKE = 1;
+
+// Activity recording (FIT "Running" or "Cycling" activity, synced with Garmin Connect)
+// and the displayed values: time, distance, paces (km/h when cycling), laps.
 class RunSession {
 
     private var mSession = null;
     private var mState = STATE_READY;
+    private var mBike = false;
     private var mAutoLap = 1000;        // m, 0 = off
 
     private var mSpeed = 0.0;           // smoothed speed (m/s)
@@ -38,8 +42,14 @@ class RunSession {
     }
 
     function loadSettings() as Void {
-        mAutoLap = Util.readNum("autoLap", 1000);
+        mBike = Util.readNum("sport", SPORT_RUN) == SPORT_BIKE;
+        mAutoLap = Util.readNum(autoLapKey(), autoLapDefault());
     }
+
+    // Each sport keeps its own auto lap: 1 km laps make no sense on a bike.
+    function autoLapKey() { return mBike ? "autoLapBike" : "autoLap"; }
+    function autoLapDefault() { return mBike ? 5000 : 1000; }
+    function isBike() { return mBike; }
 
     function state() { return mState; }
     function isRunning() { return mState == STATE_RUNNING; }
@@ -47,11 +57,17 @@ class RunSession {
 
     // ---------------- Commands ----------------
 
+    // SPORT_RUN or SPORT_BIKE, chosen in the menu shown when the app opens.
+    function setSport(sport) as Void {
+        Util.write("sport", sport);
+        loadSettings();
+    }
+
     function start() as Void {
         if (mSession == null) {
             mSession = ActivityRecording.createSession({
                 :name => "Parcours Runner",
-                :sport => ActivityRecording.SPORT_RUNNING,
+                :sport => mBike ? ActivityRecording.SPORT_CYCLING : ActivityRecording.SPORT_RUNNING,
                 :subSport => ActivityRecording.SUB_SPORT_GENERIC
             });
         }
@@ -179,6 +195,16 @@ class RunSession {
         var info = current();
         if (info == null) { return null; }
         return info.currentCadence;
+    }
+
+    // Speed shown as a pace (min/km) when running, in km/h when cycling.
+    function speedText(speed) { return mBike ? Util.kmh(speed) : Util.pace(speed); }
+    function speedUnit() { return mBike ? "km/h" : "/km"; }
+
+    // Speed over a time (ms) and a distance (m), e.g. a lap.
+    function speedOf(ms, meters) {
+        if (meters == null || meters < 20 || ms == null || ms <= 0) { return speedText(null); }
+        return speedText(meters / (ms / 1000.0));
     }
 
     function lapNumber() { return mLap; }

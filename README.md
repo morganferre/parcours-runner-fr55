@@ -3,8 +3,8 @@
 **English** · [Français](README.fr.md)
 
 Connect IQ app for the **Garmin Forerunner 55**: follow a GPX route on the watch,
-with the surrounding OpenStreetMap streets, and record a real **Running** activity
-(synced with Garmin Connect and Strava: GPS, distance, pace, heart rate, cadence, laps).
+with the surrounding OpenStreetMap streets, and record a real **Running** or **Cycling** activity
+(synced with Garmin Connect and Strava: GPS, distance, pace or speed, heart rate, cadence, laps).
 
 - route map with streets, paths and waterways, the part already run in color;
 - alert (vibration + beep) when you leave the route;
@@ -81,6 +81,10 @@ To change route: run step 3 again with another GPX, then step 4.
 
 ## During the run
 
+When the app opens, choose **Running** or **Cycling** (START; the last sport used is preselected).
+The GPS searches meanwhile. When cycling, paces are replaced by a speed in km/h and the auto lap
+is separate (5 km by default).
+
 | Button | Before the start | During the run | Paused |
 |---|---|---|---|
 | **START** | start | pause + menu | pause menu |
@@ -95,7 +99,7 @@ Screens:
 2. **Data**: time, distance, pace, heart rate.
 3. **Lap**: time and pace of the current lap, lap distance, average pace.
 
-Auto lap every km (adjustable): vibration and a "LAP 3" popup with the pace of that km.
+Auto lap every km (every 5 km when cycling, adjustable): vibration and a "LAP 3" popup with the pace of that lap.
 
 Settings (UP held): zoom, orientation, streets on/off, black or white background, auto lap.
 

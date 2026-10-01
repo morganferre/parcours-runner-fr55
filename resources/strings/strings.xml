@@ -56,9 +56,13 @@
     <string id="InvalidRoute">Invalid route</string>
     <string id="Incomplete">Incomplete $1$/$2$ pts</string>
     <string id="RunSaved">RUN SAVED</string>
+    <string id="RideSaved">RIDE SAVED</string>
     <string id="BackToExit">BACK: exit</string>
 
     <!-- Watch menus -->
+    <string id="MenuSport">Sport</string>
+    <string id="SportRun">Running</string>
+    <string id="SportBike">Cycling</string>
     <string id="MenuPause">Pause</string>
     <string id="MenuResume">Resume</string>
     <string id="MenuSave">Save</string>

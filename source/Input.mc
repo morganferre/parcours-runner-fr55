@@ -62,6 +62,30 @@ class MainDelegate extends WatchUi.BehaviorDelegate {
     }
 }
 
+// ---------------- Sport menu (first screen, the GPS searches meanwhile) ----------------
+
+function sportMenu() {
+    var menu = new WatchUi.Menu2({:title => Util.str(Rez.Strings.MenuSport)});
+    menu.addItem(new WatchUi.MenuItem(Util.str(Rez.Strings.SportRun), null, SPORT_RUN, {}));
+    menu.addItem(new WatchUi.MenuItem(Util.str(Rez.Strings.SportBike), null, SPORT_BIKE, {}));
+    menu.setFocus(Util.readNum("sport", SPORT_RUN) == SPORT_BIKE ? 1 : 0);     // last sport used
+    return menu;
+}
+
+// BACK in this menu leaves the app (default behavior: it is the first view).
+class SportMenuDelegate extends WatchUi.Menu2InputDelegate {
+
+    function initialize() {
+        Menu2InputDelegate.initialize();
+    }
+
+    function onSelect(item) as Void {
+        getApp().run.setSport(item.getId());
+        var view = new MainView();
+        WatchUi.switchToView(view, new MainDelegate(view), WatchUi.SLIDE_LEFT);
+    }
+}
+
 // ---------------- Pause menu ----------------
 
 function openPauseMenu() as Void {
@@ -85,7 +109,8 @@ class PauseMenuDelegate extends WatchUi.Menu2InputDelegate {
             run.resume();
             WatchUi.popView(WatchUi.SLIDE_DOWN);
         } else if (id == :save) {
-            var summary = [run.elapsedTime(), run.distance(), run.averageSpeed()];
+            var summary = [run.elapsedTime(), run.distance(), run.speedText(run.averageSpeed()), run.speedUnit(),
+                Util.str(run.isBike() ? Rez.Strings.RideSaved : Rez.Strings.RunSaved)];
             run.save();
             WatchUi.switchToView(new SummaryView(summary), new SummaryDelegate(), WatchUi.SLIDE_UP);
         } else if (id == :discard) {
@@ -134,6 +159,7 @@ class SummaryDelegate extends WatchUi.BehaviorDelegate {
 
 const ZOOMS = [100, 200, 300, 500, 1000];
 const AUTO_LAPS = [0, 500, 1000, 2000];
+const AUTO_LAPS_BIKE = [0, 1000, 5000, 10000];
 
 function zoomLabel() {
     return Util.readNum("zoom", 200) + " m";
@@ -147,8 +173,10 @@ function themeLabel() {
     return Util.str(Util.readNum("theme", 0) == 0 ? Rez.Strings.ThemeDark : Rez.Strings.ThemeLight);
 }
 
+// Auto lap of the current sport (the last one chosen at the start).
 function autoLapLabel() {
-    var v = Util.readNum("autoLap", 1000);
+    var run = getApp().run;
+    var v = Util.readNum(run.autoLapKey(), run.autoLapDefault());
     if (v == 0) { return Util.str(Rez.Strings.AutoLapOff); }
     return Util.dist(v);
 }
@@ -185,7 +213,9 @@ class SettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
             Util.write("theme", 1 - Util.readNum("theme", 0));
             item.setSubLabel(themeLabel());
         } else if (id == :autoLap) {
-            Util.write("autoLap", next(AUTO_LAPS, Util.readNum("autoLap", 1000)));
+            var run = getApp().run;
+            Util.write(run.autoLapKey(), next(run.isBike() ? AUTO_LAPS_BIKE : AUTO_LAPS,
+                Util.readNum(run.autoLapKey(), run.autoLapDefault())));
             item.setSubLabel(autoLapLabel());
         }
         var app = getApp();
